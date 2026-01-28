@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { InventoryItem, PlannerItem, UnitOfMeasure, SavedRecipe } from '../types';
 import { CalculatorIcon } from './icons/CalculatorIcon';
+
 // Import the common lists for consistency. 
 const COMMON_INGREDIENTS_LIST = [
   // Flours
@@ -52,7 +53,6 @@ const InventoryManagement: React.FC = () => {
             }
         }
 
-        // We need both recipes and planner items to sync them
         const recipesStr = localStorage.getItem('sourdough_recipes');
         const planStr = localStorage.getItem('sourdough_planner_items');
         
@@ -71,7 +71,6 @@ const InventoryManagement: React.FC = () => {
             } catch (e) { console.error(e); }
         }
 
-        // SYNC LOGIC:
         const validPlannerItems: PlannerItem[] = [];
         let hasChanges = false;
         
@@ -108,7 +107,6 @@ const InventoryManagement: React.FC = () => {
       }
   }, [inventory]);
 
-  // Unit Conversion Helpers
   const convertToGrams = (weight: number, unit: UnitOfMeasure): number => {
       switch (unit) {
           case 'lb': return weight * 453.592;
@@ -119,7 +117,6 @@ const InventoryManagement: React.FC = () => {
       }
   };
 
-  // Calculated Preview
   const previewCalculation = useMemo(() => {
       const weight = parseFloat(packageWeight) || 0;
       const cost = parseFloat(costPerPackage) || 0;
@@ -214,25 +211,32 @@ const InventoryManagement: React.FC = () => {
           balance: number;
           cost?: number;
           packageDetails?: string;
+          status: 'critical' | 'low' | 'healthy' | 'untracked';
       }[] = [];
 
       inventory.forEach(item => {
           const reqKey = Object.keys(requirements).find(k => k.toLowerCase() === item.name.toLowerCase());
           const allocated = reqKey ? (requirements[reqKey] as number) : 0;
+          const balance = item.quantity - allocated;
           
           let pkgDetails = '';
           if (item.packageWeight) {
              pkgDetails = `${item.itemsPerPackage} x ${item.packageWeight}${item.packageUnit} @ $${item.costPerPackage}`;
           }
 
+          let status: 'critical' | 'low' | 'healthy' | 'untracked' = 'healthy';
+          if (balance < 0) status = 'critical';
+          else if (balance < 2000) status = 'low'; // Fixed threshold of 2kg for "low"
+
           rows.push({
               id: item.id,
               name: item.name,
               inStock: item.quantity,
               allocated: allocated,
-              balance: item.quantity - allocated,
+              balance: balance,
               cost: item.costPerKg,
-              packageDetails: pkgDetails
+              packageDetails: pkgDetails,
+              status
           });
       });
 
@@ -245,7 +249,8 @@ const InventoryManagement: React.FC = () => {
                   inStock: 0,
                   allocated: reqAmount,
                   balance: -reqAmount,
-                  cost: undefined
+                  cost: undefined,
+                  status: 'untracked'
               });
           }
       });
@@ -406,8 +411,33 @@ const InventoryManagement: React.FC = () => {
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-amber-700 dark:text-amber-400 font-medium text-sm">
                                     {row.allocated > 0 ? (row.allocated / 1000).toFixed(2) : '-'} kg
                                 </td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-right text-sm font-bold ${row.balance < 0 ? 'text-red-600' : 'text-stone-700 dark:text-stone-200'}`}>
-                                    {(row.balance / 1000).toFixed(2)} kg
+                                <td className="px-6 py-4 whitespace-nowrap text-right">
+                                    <div className="flex flex-col items-end">
+                                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-sm font-bold shadow-sm ${
+                                            row.status === 'critical' ? 'bg-red-100 text-red-800 border border-red-200' :
+                                            row.status === 'low' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
+                                            row.status === 'untracked' ? 'bg-stone-100 text-stone-500 border border-stone-200' :
+                                            'bg-green-50 text-green-700 border border-green-100'
+                                        }`}>
+                                            {row.status === 'critical' && (
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                            )}
+                                            {row.status === 'low' && (
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                            )}
+                                            {(row.balance / 1000).toFixed(2)} kg
+                                        </div>
+                                        {row.status === 'critical' && (
+                                            <span className="text-[10px] font-black uppercase text-red-600 mt-1 animate-pulse">Deficit / Restock</span>
+                                        )}
+                                        {row.status === 'low' && (
+                                            <span className="text-[10px] font-bold uppercase text-amber-600 mt-1">Low Inventory</span>
+                                        )}
+                                    </div>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-stone-600 dark:text-stone-400">
                                    {row.cost ? `$${row.cost.toFixed(2)}/kg` : '-'}

@@ -5,7 +5,6 @@ export interface Ingredient {
   percentage: number;
   costPerKg?: number;
   inventoryId?: string;
-  // Optional weight override for UI state tracking before calc
   weight?: number; 
 }
 
@@ -28,17 +27,11 @@ export interface GeminiGroundedResponse {
 export interface RecipeSnapshot {
   numberOfLoaves: number;
   weightPerLoaf: number;
-  
-  // New: Dedicated array for flour blend
   flours: Ingredient[]; 
-  
-  // Non-flour ingredients (Water, Salt, Yeast, etc.)
   ingredients: Ingredient[];
-  
   date: string;
   version: number;
-
-  // Deprecated but kept for type compatibility during migration if needed
+  // Added base properties for backward compatibility and specialized tracking
   baseFlourName?: string;
   baseFlourInventoryId?: string;
   baseFlourCostPerKg?: number;
@@ -61,11 +54,9 @@ export type UnitOfMeasure = 'g' | 'kg' | 'lb' | 'oz';
 export interface InventoryItem {
   id: string;
   name: string;
-  quantity: number; // stored in grams
-  costPerKg?: number; // derived or manual
+  quantity: number; 
+  costPerKg?: number; 
   lastUpdated: string;
-  
-  // Packaging Details for easy conversion/editing
   packageWeight?: number;
   packageUnit?: UnitOfMeasure;
   itemsPerPackage?: number;
