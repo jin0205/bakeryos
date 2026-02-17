@@ -1,8 +1,9 @@
 
 import React, { useState, useMemo } from 'react';
-import { SavedRecipe } from '../types';
+import { SavedRecipe, PlannerItem } from '../types';
 import { SearchIcon } from './icons/SearchIcon';
 import { CalculatorIcon } from './icons/CalculatorIcon';
+import { ClipboardIcon } from './icons/ClipboardIcon';
 
 interface RecipeLibraryProps {
   recipes: SavedRecipe[];
@@ -23,6 +24,26 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
     const water = recipe.ingredients.find(i => i.name.toLowerCase().includes('water'));
     if (!water) return '?';
     return `${water.percentage}%`;
+  };
+
+  const handleAddToPlan = (e: React.MouseEvent, recipe: SavedRecipe) => {
+    e.stopPropagation();
+    try {
+        const existingStr = localStorage.getItem('sourdough_planner_items');
+        const existing: PlannerItem[] = existingStr ? JSON.parse(existingStr) : [];
+        
+        const newItem: PlannerItem = {
+            uniqueId: Date.now().toString() + Math.random().toString().slice(2, 5),
+            recipe: recipe,
+            count: recipe.numberOfLoaves
+        };
+        
+        const updated = [...existing, newItem];
+        localStorage.setItem('sourdough_planner_items', JSON.stringify(updated));
+        alert(`Added "${recipe.name}" to Batch Planner`);
+    } catch (err) {
+        console.error("Failed to add to planner", err);
+    }
   };
 
   const filteredAndSortedRecipes = useMemo(() => {
@@ -116,13 +137,22 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
                         <span className="text-xs text-stone-500 dark:text-stone-400 font-medium group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
                             Open Workbench &rarr;
                         </span>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); onDelete(recipe.id); }}
-                            className="text-stone-400 dark:text-stone-600 hover:text-red-600 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            title="Delete Recipe"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                        </button>
+                        <div className="flex items-center gap-2">
+                             <button
+                                onClick={(e) => handleAddToPlan(e, recipe)}
+                                className="text-stone-400 dark:text-stone-600 hover:text-amber-600 p-1 rounded-md hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                                title="Add to Batch Planner"
+                            >
+                                <ClipboardIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDelete(recipe.id); }}
+                                className="text-stone-400 dark:text-stone-600 hover:text-red-600 p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                title="Delete Recipe"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             ))}
