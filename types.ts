@@ -25,13 +25,13 @@ export interface GeminiGroundedResponse {
 }
 
 export interface RecipeSnapshot {
-  numberOfLoaves: number;
-  weightPerLoaf: number;
+  numberOfLoaves: number; // This acts as the "Batch Multiplier"
+  weightPerLoaf: number; // Historical/Display weight
+  targetLoafWeight: number; // The new independent target weight
   flours: Ingredient[]; 
   ingredients: Ingredient[];
   date: string;
   version: number;
-  // Added base properties for backward compatibility and specialized tracking
   baseFlourName?: string;
   baseFlourInventoryId?: string;
   baseFlourCostPerKg?: number;
@@ -49,12 +49,12 @@ export interface PlannerItem {
   count: number;
 }
 
-export type UnitOfMeasure = 'g' | 'kg' | 'lb' | 'oz';
+export type UnitOfMeasure = 'g' | 'kg' | 'lb' | 'oz' | 'ml';
 
 export interface InventoryItem {
   id: string;
   name: string;
-  quantity: number; 
+  quantity: number; // In grams
   costPerKg?: number; 
   lastUpdated: string;
   packageWeight?: number;

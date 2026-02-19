@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { parseRecipePdf } from '../services/geminiService';
 import { SavedRecipe, Ingredient } from '../types';
@@ -160,11 +159,13 @@ const PDFImporter: React.FC = () => {
         const firstFlour = previewData.ingredients.find(i => i.isFlour);
         const baseFlourName = firstFlour ? firstFlour.name : "Bread Flour";
 
+        // Added missing targetLoafWeight to fix TypeScript error
         const newRecipe: SavedRecipe = {
             id: Date.now().toString(),
             name: previewData.name || "Imported PDF Recipe",
             numberOfLoaves: Number(previewData.numberOfLoaves) || 1,
             weightPerLoaf: Number(previewData.weightPerLoaf) || 1000,
+            targetLoafWeight: Number(previewData.weightPerLoaf) || 1000,
             flours: finalFlours,
             ingredients: finalIngredients,
             date: new Date().toLocaleDateString(),
@@ -194,12 +195,12 @@ const PDFImporter: React.FC = () => {
 
             {/* Upload Area */}
             <div className="bg-stone-50 dark:bg-stone-900/40 border-2 border-dashed border-stone-300 dark:border-stone-700/60 rounded-lg p-8 text-center hover:border-amber-500 dark:hover:border-amber-600 transition-colors mb-8">
-                <DocumentIcon className="mx-auto h-12 w-12 text-stone-400 dark:text-stone-500 mb-3" />
+                <DocumentIcon className="mx-auto h-12 w-12 text-stone-400 dark:text-stone-50 mb-3" />
                 <label htmlFor="pdf-upload" className="cursor-pointer">
                      <span className="block text-sm font-medium text-stone-600 dark:text-stone-300 mb-1">
                         {file ? file.name : 'Click to select a PDF file'}
                      </span>
-                     <span className="text-xs text-stone-400 dark:text-stone-500">Supported format: .pdf</span>
+                     <span className="text-xs text-stone-400 dark:text-stone-50">Supported format: .pdf</span>
                     <input 
                         id="pdf-upload" 
                         type="file" 

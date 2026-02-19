@@ -6,13 +6,14 @@ import RecipeLab from './RecipeLab';
 import RecipeImporter from './RecipeImporter';
 import MeasurementConverter from './MeasurementConverter';
 import DesignShowcase from './DesignShowcase';
+import DDTCalculator from './DDTCalculator';
 import { CameraIcon } from './icons/CameraIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { LabIcon } from './icons/LabIcon';
 import { DocumentIcon } from './icons/DocumentIcon';
 import { CalculatorIcon } from './icons/CalculatorIcon';
 
-type LabTab = 'assistant' | 'analyzer' | 'science' | 'pdf' | 'converter' | 'showcase';
+type LabTab = 'assistant' | 'analyzer' | 'science' | 'pdf' | 'converter' | 'ddt' | 'showcase';
 
 const BakingLab: React.FC = () => {
   const [activeTab, setActiveTab] = useState<LabTab>('assistant');
@@ -62,6 +63,20 @@ const BakingLab: React.FC = () => {
             >
               <LabIcon className={`mr-3 h-5 w-5 ${activeTab === 'science' ? 'text-amber-500' : 'text-stone-400'}`} />
               <span className="whitespace-nowrap">Dev & Fermentation</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('ddt')}
+              className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-md transition-colors ${
+                activeTab === 'ddt'
+                  ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                  : 'text-stone-600 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
+              }`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className={`mr-3 h-5 w-5 ${activeTab === 'ddt' ? 'text-amber-500' : 'text-stone-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+              <span className="whitespace-nowrap">DDT Water Temp</span>
             </button>
 
             <button
@@ -120,6 +135,11 @@ const BakingLab: React.FC = () => {
              {activeTab === 'science' && (
                <div className="animate-fade-in">
                  <RecipeLab />
+               </div>
+             )}
+             {activeTab === 'ddt' && (
+               <div className="animate-fade-in">
+                 <DDTCalculator />
                </div>
              )}
              {activeTab === 'pdf' && (

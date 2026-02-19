@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { parseRecipePdf, parseRecipeText } from '../services/geminiService';
 import { SavedRecipe, Ingredient } from '../types';
@@ -194,11 +193,13 @@ const RecipeImporter: React.FC = () => {
             .filter(i => !i.isFlour)
             .map(({ isFlour, ...rest }) => rest);
 
+        // Added missing targetLoafWeight to fix TypeScript error
         const newRecipe: SavedRecipe = {
             id: Date.now().toString(),
             name: previewData.name || `Imported ${mode === 'pdf' ? 'PDF' : 'Sheets'} Recipe`,
             numberOfLoaves: Number(previewData.numberOfLoaves) || 1,
             weightPerLoaf: Number(previewData.weightPerLoaf) || 1000,
+            targetLoafWeight: Number(previewData.weightPerLoaf) || 1000,
             flours: finalFlours,
             ingredients: finalIngredients,
             date: new Date().toLocaleDateString(),

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { SavedRecipe, PlannerItem, InventoryItem, Ingredient } from '../types';
 
@@ -34,7 +33,6 @@ const BatchPlanner: React.FC = () => {
       }
     }
 
-    // SYNC LOGIC: Ensure Planner Items are valid against saved recipes
     const validPlannerItems: PlannerItem[] = [];
     let hasChanges = false;
     const recipeMap = new Map(currentRecipes.map(r => [r.id, r]));
@@ -42,13 +40,11 @@ const BatchPlanner: React.FC = () => {
     currentPlan.forEach(item => {
         const freshRecipe = recipeMap.get(item.recipe.id);
         if (!freshRecipe) {
-             // Recipe Deleted - remove from plan
              hasChanges = true;
              return;
         }
 
         if (freshRecipe.version !== item.recipe.version) {
-             // Recipe Updated/Reverted - update plan
              validPlannerItems.push({ ...item, recipe: freshRecipe });
              hasChanges = true;
         } else {
@@ -73,12 +69,7 @@ const BatchPlanner: React.FC = () => {
 
   // Persist plan changes
   useEffect(() => {
-    if (plannerItems.length > 0) {
-         localStorage.setItem('sourdough_planner_items', JSON.stringify(plannerItems));
-    } else {
-        const existing = localStorage.getItem('sourdough_planner_items');
-        if (existing) localStorage.setItem('sourdough_planner_items', JSON.stringify([]));
-    }
+    localStorage.setItem('sourdough_planner_items', JSON.stringify(plannerItems));
   }, [plannerItems]);
 
   const addToPlan = (recipe: SavedRecipe) => {
@@ -106,7 +97,6 @@ const BatchPlanner: React.FC = () => {
     let totalDough: number = 0;
     let totalCost: number = 0;
 
-    // Helper to resolve cost
     const getCostPerKg = (name: string, inventoryId?: string, snapshotCost?: number): number => {
         if (inventoryId) {
             const item = inventory.find(i => i.id === inventoryId);
@@ -114,7 +104,6 @@ const BatchPlanner: React.FC = () => {
         }
         const match = inventory.find(i => i.name.toLowerCase().trim() === name.toLowerCase().trim());
         if (match && match.costPerKg) return match.costPerKg;
-
         return snapshotCost || 0;
     };
 
@@ -123,37 +112,25 @@ const BatchPlanner: React.FC = () => {
       const targetBatchWeight = (Number(count) || 0) * (Number(recipe.weightPerLoaf) || 0);
       totalDough += targetBatchWeight;
 
-      // --- NEW MULTI-FLOUR LOGIC ---
-      let flours: Ingredient[] = [];
-      if (recipe.flours && recipe.flours.length > 0) {
-          flours = recipe.flours;
-      } else if (recipe.baseFlourName) {
-           // Fallback for old recipes
-           flours = [{ id: 1, name: recipe.baseFlourName, percentage: 100, inventoryId: recipe.baseFlourInventoryId, costPerKg: recipe.baseFlourCostPerKg }];
-      }
-
-      const totalFlourPct = flours.reduce((sum, f) => sum + (f.percentage || 0), 0);
+      let flours: Ingredient[] = recipe.flours || [];
+      const totalFlourPct = flours.reduce((sum, f) => sum + (f.percentage || 0), 0) || 100;
       const totalIngPct = recipe.ingredients.reduce((sum, ing) => sum + (ing.percentage || 0), 0);
       const totalFormulaPct = totalFlourPct + totalIngPct;
 
       const totalFlourWeight = totalFormulaPct > 0 ? targetBatchWeight / (totalFormulaPct / 100) : 0;
 
-      // Helper to process a list of items
       const processItems = (list: Ingredient[]) => {
           list.forEach(ing => {
               if (!ing.name) return;
               const name = ing.name.trim();
-              
-              // Weight = TotalFlourWeight * Percentage / 100
               const weight = (totalFlourWeight * (Number(ing.percentage) || 0)) / 100;
-              
               if (!summary[name]) summary[name] = { weight: 0, cost: 0 };
-              
               const costPerKg = getCostPerKg(name, ing.inventoryId, ing.costPerKg);
               const cost = (weight / 1000) * costPerKg;
-              
-              summary[name].weight += weight;
-              summary[name].cost += cost;
+              // Fix: Added type assertion to fix unknown type error on line 167
+              const current = summary[name] as { weight: number, cost: number };
+              current.weight += weight;
+              current.cost += cost;
               totalCost += cost;
           });
       };
@@ -169,69 +146,87 @@ const BatchPlanner: React.FC = () => {
       const val = parseFloat(batchScaleValue);
       if (isNaN(val) || val <= 0) return;
       if (plannerItems.length === 0) return;
-
-      let factor = 1;
-
-      if (batchScalingMode === 'percentage') {
-          factor = val / 100;
-      } else {
-          // Weight mode
-          const currentTotal = plannerSummary.totalDough;
-          if (currentTotal <= 0) return; // Prevent division by zero
-          factor = val / currentTotal;
-      }
-
+      let factor = batchScalingMode === 'percentage' ? val / 100 : val / (plannerSummary.totalDough || 1);
       const updatedItems = plannerItems.map(item => ({
           ...item,
           count: parseFloat((item.count * factor).toFixed(2))
       }));
-
       setPlannerItems(updatedItems);
-      setBatchScaleValue(''); // Reset input to indicate completion
+      setBatchScaleValue('');
+  };
+
+  const handleCommitBake = () => {
+      if (plannerItems.length === 0) return;
+      if (!window.confirm("Commit this batch? This will subtract the required ingredients from your inventory stock and clear the planner.")) return;
+
+      const updatedInventory = [...inventory];
+      let missingItems: string[] = [];
+
+      Object.entries(plannerSummary.summary).forEach(([name, data]) => {
+          const invItemIndex = updatedInventory.findIndex(i => i.name.toLowerCase().trim() === name.toLowerCase().trim());
+          if (invItemIndex > -1) {
+              // Fix: Added type assertion to fix potential unknown type error when accessing data.weight
+              const itemData = data as { weight: number };
+              updatedInventory[invItemIndex].quantity -= itemData.weight;
+              updatedInventory[invItemIndex].lastUpdated = new Date().toISOString();
+          } else {
+              missingItems.push(name);
+          }
+      });
+
+      setInventory(updatedInventory);
+      localStorage.setItem('sourdough_inventory', JSON.stringify(updatedInventory));
+      
+      setPlannerItems([]);
+      localStorage.setItem('sourdough_planner_items', JSON.stringify([]));
+
+      alert(`Bake committed successfully! Stock adjusted.${missingItems.length > 0 ? '\n\nNote: The following items were used but were not found in inventory: ' + missingItems.join(', ') : ''}`);
   };
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">Batch Production Planner</h2>
-        <p className="text-stone-600 dark:text-stone-400">Combine multiple recipes into a master production list with cost estimation.</p>
+      <div className="mb-6 flex justify-between items-end">
+        <div>
+          <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">Batch Production Planner</h2>
+          <p className="text-stone-600 dark:text-stone-400">Combine multiple recipes into a master production list.</p>
+        </div>
+        {plannerItems.length > 0 && (
+          <button 
+            onClick={handleCommitBake}
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Commit & Start Bake
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left: Recipe Selection */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors">
             <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-3">Add Recipes</h3>
-            {savedRecipes.length === 0 ? (
-              <p className="text-sm text-stone-500 dark:text-stone-400">No saved recipes. Go to the Calculator to create and save recipes.</p>
-            ) : (
-              <ul className="space-y-2 max-h-96 overflow-y-auto">
-                {savedRecipes.map(recipe => (
-                  <li key={recipe.id} className="flex items-center justify-between p-2 bg-stone-50 dark:bg-stone-800/40 rounded hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors">
-                    <div className="truncate mr-2">
-                      <p className="text-sm font-medium text-stone-700 dark:text-stone-200 truncate">{recipe.name}</p>
-                      <p className="text-xs text-stone-500 dark:text-stone-400">v{recipe.version} • {recipe.numberOfLoaves} @ {recipe.weightPerLoaf}g</p>
-                    </div>
-                    <button
-                      onClick={() => addToPlan(recipe)}
-                      className="text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 px-2 py-1 rounded text-stone-600 dark:text-stone-300 hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400 dark:hover:border-amber-500 transition-colors"
-                    >
-                      Add
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <ul className="space-y-2 max-h-96 overflow-y-auto">
+              {savedRecipes.map(recipe => (
+                <li key={recipe.id} className="flex items-center justify-between p-2 bg-stone-50 dark:bg-stone-800/40 rounded hover:bg-stone-100 dark:hover:bg-stone-700 transition-colors">
+                  <div className="truncate mr-2">
+                    <p className="text-sm font-medium text-stone-700 dark:text-stone-200 truncate">{recipe.name}</p>
+                    <p className="text-xs text-stone-500 dark:text-stone-400">v{recipe.version} • {recipe.numberOfLoaves} @ {recipe.weightPerLoaf}g</p>
+                  </div>
+                  <button onClick={() => addToPlan(recipe)} className="text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 px-2 py-1 rounded text-stone-600 dark:text-stone-300 hover:text-amber-600 transition-colors">Add</button>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors">
             <div className="flex justify-between items-center mb-3">
                <h3 className="font-semibold text-stone-800 dark:text-stone-200">Current Plan</h3>
                {plannerItems.length > 0 && (
-                   <button onClick={() => setPlannerItems([])} className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Clear All</button>
+                   <button onClick={() => setPlannerItems([])} className="text-xs text-red-500 hover:text-red-700">Clear All</button>
                )}
             </div>
-            
             {plannerItems.length === 0 ? (
               <p className="text-sm text-stone-500 dark:text-stone-400 italic">Plan is empty.</p>
             ) : (
@@ -248,7 +243,7 @@ const BatchPlanner: React.FC = () => {
                         type="number"
                         value={item.count}
                         onChange={(e) => updatePlanCount(item.uniqueId, e.target.value)}
-                        className="w-16 p-1 text-xs border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded focus:border-amber-500 focus:ring-amber-500 dark:text-stone-100"
+                        className="w-16 p-1 text-xs border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded focus:border-amber-500 dark:text-stone-100"
                       />
                       <span className="text-stone-400 dark:text-stone-500 text-xs">x {item.recipe.weightPerLoaf}g</span>
                     </div>
@@ -259,51 +254,21 @@ const BatchPlanner: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Aggregation */}
-        <div className="lg:col-span-2">
-          {/* Batch Operations Panel */}
+        <div className="lg:col-span-2 space-y-6">
           {plannerItems.length > 0 && (
-              <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
+              <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-colors">
                   <div className="flex-grow">
-                      <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100 mb-1">Batch Operations</h3>
-                      <p className="text-xs text-stone-500 dark:text-stone-400">Scale all recipes in the plan at once.</p>
+                      <h3 className="text-sm font-bold text-stone-800 dark:text-stone-100 mb-1">Batch Scaling</h3>
+                      <p className="text-xs text-stone-500 dark:text-stone-400">Preserve all baker's percentages while adjusting volume.</p>
                   </div>
-                  
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-end">
                       <div className="flex rounded-md shadow-sm">
-                          <button
-                            onClick={() => setBatchScalingMode('percentage')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-stone-800 dark:bg-amber-600 text-white border-stone-800' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800'}`}
-                          >
-                            % Scale
-                          </button>
-                           <button
-                            onClick={() => setBatchScalingMode('weight')}
-                            className={`px-3 py-1.5 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-stone-800 dark:bg-amber-600 text-white border-stone-800' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800'}`}
-                          >
-                            Target Weight
-                          </button>
+                          <button onClick={() => setBatchScalingMode('percentage')} className={`px-3 py-1.5 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-stone-800 dark:bg-amber-600 text-white' : 'bg-white dark:bg-stone-900 text-stone-600'}`}>%</button>
+                          <button onClick={() => setBatchScalingMode('weight')} className={`px-3 py-1.5 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-stone-800 dark:bg-amber-600 text-white' : 'bg-white dark:bg-stone-900 text-stone-600'}`}>Total Weight</button>
                       </div>
-
                       <div className="flex gap-2">
-                        <div className="relative rounded-md shadow-sm w-32">
-                            <input
-                                type="number"
-                                value={batchScaleValue}
-                                onChange={(e) => setBatchScaleValue(e.target.value)}
-                                className="block w-full px-3 py-1.5 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded-md text-sm focus:ring-amber-500 focus:border-amber-500 dark:text-stone-100"
-                                placeholder={batchScalingMode === 'percentage' ? "e.g. 150" : "e.g. 50000"}
-                            />
-                            <div className="absolute inset-y-0 right-0 pr-2 flex items-center pointer-events-none">
-                                <span className="text-stone-400 dark:text-stone-500 text-xs">{batchScalingMode === 'percentage' ? '%' : 'g'}</span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={applyBatchScaling}
-                            className="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700 whitespace-nowrap"
-                        >
-                            Apply Scale
-                        </button>
+                        <input type="number" value={batchScaleValue} onChange={(e) => setBatchScaleValue(e.target.value)} className="block w-32 px-3 py-1.5 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded-md text-sm dark:text-stone-100" placeholder={batchScalingMode === 'percentage' ? "%" : "grams"} />
+                        <button onClick={applyBatchScaling} className="px-3 py-1.5 bg-amber-600 text-white text-xs font-medium rounded-md hover:bg-amber-700">Apply</button>
                       </div>
                   </div>
               </div>
@@ -313,42 +278,46 @@ const BatchPlanner: React.FC = () => {
             <div className="bg-stone-800 dark:bg-stone-950 text-white px-6 py-4 flex justify-between items-center">
               <h3 className="font-bold">Master Production List</h3>
               <div className="text-right">
-                  <div className="text-sm opacity-80">Total Dough: {(plannerSummary.totalDough / 1000).toFixed(2)} kg</div>
-                  <div className="text-xl font-bold text-amber-400">Est. Cost: ${plannerSummary.totalCost.toFixed(2)}</div>
+                  <div className="text-sm opacity-80">{(plannerSummary.totalDough / 1000).toFixed(2)} kg total dough</div>
+                  <div className="text-xl font-bold text-amber-400">${plannerSummary.totalCost.toFixed(2)} cost</div>
               </div>
             </div>
 
             {Object.keys(plannerSummary.summary).length === 0 ? (
-              <div className="p-8 text-center text-stone-500 dark:text-stone-400 bg-white dark:bg-transparent transition-colors">
-                Add recipes to the plan to view ingredient requirements and costs.
-              </div>
+              <div className="p-8 text-center text-stone-500 dark:text-stone-400">Add recipes to view the production requirements.</div>
             ) : (
-              <div className="overflow-x-auto bg-white dark:bg-transparent">
-                <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">
-                  <thead className="bg-stone-50 dark:bg-stone-950/40">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Ingredient</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Total Weight</th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Est. Cost</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-200 dark:divide-stone-800/40">
-                    {(Object.entries(plannerSummary.summary) as [string, { weight: number, cost: number }][])
-                        .sort((a, b) => b[1].weight - a[1].weight)
-                        .map(([name, data]) => (
-                      <tr key={name} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors">
+              <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">
+                <thead className="bg-stone-50 dark:bg-stone-950/40">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Ingredient</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Total Weight</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Stock After Bake</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-stone-200 dark:divide-stone-800/40">
+                  {Object.entries(plannerSummary.summary).map(([name, data]) => {
+                    // Fix: Added type assertion to fix unknown type error on lines 297 and 301
+                    const itemData = data as { weight: number; cost: number };
+                    const invItem = inventory.find(i => i.name.toLowerCase().trim() === name.toLowerCase().trim());
+                    const remaining = invItem ? invItem.quantity - itemData.weight : null;
+                    return (
+                      <tr key={name} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900 dark:text-stone-100">{name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600 dark:text-stone-400 text-right">
-                          {data.weight >= 1000 ? `${(data.weight / 1000).toFixed(2)} kg` : `${data.weight.toFixed(0)} g`}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-800 dark:text-stone-200 text-right font-medium">
-                            ${data.cost.toFixed(2)}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600 dark:text-stone-400 text-right">{itemData.weight >= 1000 ? `${(itemData.weight / 1000).toFixed(2)} kg` : `${itemData.weight.toFixed(0)} g`}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                          {remaining !== null ? (
+                            <span className={remaining < 0 ? 'text-red-600 font-bold' : 'text-stone-500'}>
+                              {(remaining / 1000).toFixed(2)} kg
+                            </span>
+                          ) : (
+                            <span className="text-stone-300 italic">Untracked</span>
+                          )}
                         </td>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    );
+                  })}
+                </tbody>
+              </table>
             )}
           </div>
         </div>
