@@ -54,7 +54,12 @@ const RecipeManagement: React.FC = () => {
     const saved = localStorage.getItem('sourdough_recipes');
     if (saved) {
       try {
-        setSavedRecipes(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setSavedRecipes(parsed.map((r: any) => ({
+          ...r,
+          version: r.version || 1,
+          history: r.history || [],
+        })));
       } catch (e) {
         console.error('Failed to reload recipes', e);
       }

@@ -21,7 +21,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({
   const getHydration = (recipe: SavedRecipe): string => {
     const water = recipe.ingredients.find(i => i.name.toLowerCase().includes('water'));
     if (!water) return '?';
-    return `${water.percentage}%`;
+    return `${Math.round(water.percentage)}%`;
   };
 
   const handleAddToPlan = (e: React.MouseEvent, recipe: SavedRecipe) => {
