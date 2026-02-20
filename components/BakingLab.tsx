@@ -9,10 +9,10 @@ import DesignShowcase from './DesignShowcase';
 import DDTCalculator from './DDTCalculator';
 
 interface BakingLabProps {
-  activeTab: LabTab;
+  activeLabTab: LabTab;
 }
 
-const BakingLab: React.FC<BakingLabProps> = ({ activeTab }) => {
+const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab }) => {
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
@@ -20,13 +20,13 @@ const BakingLab: React.FC<BakingLabProps> = ({ activeTab }) => {
         <p className="text-stone-600 dark:text-stone-400">Your AI-powered research and development center.</p>
       </div>
       <div className="bg-white dark:bg-stone-900/40 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800/60 p-6 min-h-[600px] transition-colors duration-300">
-        {activeTab === 'assistant' && <div className="animate-fade-in"><BakersAssistant /></div>}
-        {activeTab === 'analyzer'  && <div className="animate-fade-in"><ImageAnalyzer /></div>}
-        {activeTab === 'science'   && <div className="animate-fade-in"><RecipeLab /></div>}
-        {activeTab === 'ddt'       && <div className="animate-fade-in"><DDTCalculator /></div>}
-        {activeTab === 'pdf'       && <div className="animate-fade-in"><RecipeImporter /></div>}
-        {activeTab === 'converter' && <div className="animate-fade-in"><MeasurementConverter /></div>}
-        {activeTab === 'showcase'  && <div className="animate-fade-in"><DesignShowcase /></div>}
+        {activeLabTab === 'assistant' && <div className="animate-fade-in"><BakersAssistant /></div>}
+        {activeLabTab === 'analyzer'  && <div className="animate-fade-in"><ImageAnalyzer /></div>}
+        {activeLabTab === 'science'   && <div className="animate-fade-in"><RecipeLab /></div>}
+        {activeLabTab === 'ddt'       && <div className="animate-fade-in"><DDTCalculator /></div>}
+        {activeLabTab === 'pdf'       && <div className="animate-fade-in"><RecipeImporter /></div>}
+        {activeLabTab === 'converter' && <div className="animate-fade-in"><MeasurementConverter /></div>}
+        {activeLabTab === 'showcase'  && <div className="animate-fade-in"><DesignShowcase /></div>}
       </div>
     </div>
   );

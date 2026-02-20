@@ -37,7 +37,7 @@ const App: React.FC = () => {
       case 'planner':    return <BatchPlanner />;
       case 'inventory':  return <InventoryManagement />;
       case 'cost':       return <CostAnalysis />;
-      case 'lab':        return <BakingLab activeTab={activeLabTab} />;
+      case 'lab':        return <BakingLab activeLabTab={activeLabTab} />;
       default:           return <RecipeManagement />;
     }
   };
