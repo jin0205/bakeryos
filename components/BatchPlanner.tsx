@@ -263,8 +263,8 @@ const BatchPlanner: React.FC = () => {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-end">
                       <div className="flex rounded-md shadow-sm">
-                          <button onClick={() => setBatchScalingMode('percentage')} className={`px-3 py-1.5 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-stone-800 dark:bg-amber-600 text-white' : 'bg-white dark:bg-stone-900 text-stone-600'}`}>%</button>
-                          <button onClick={() => setBatchScalingMode('weight')} className={`px-3 py-1.5 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-stone-800 dark:bg-amber-600 text-white' : 'bg-white dark:bg-stone-900 text-stone-600'}`}>Total Weight</button>
+                          <button onClick={() => setBatchScalingMode('percentage')} className={`px-3 py-1.5 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>%</button>
+                          <button onClick={() => setBatchScalingMode('weight')} className={`px-3 py-1.5 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>Total Weight</button>
                       </div>
                       <div className="flex gap-2">
                         <input type="number" value={batchScaleValue} onChange={(e) => setBatchScaleValue(e.target.value)} className="block w-32 px-3 py-1.5 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded-md text-sm dark:text-stone-100" placeholder={batchScalingMode === 'percentage' ? "%" : "grams"} />
@@ -310,7 +310,7 @@ const BatchPlanner: React.FC = () => {
                               {(remaining / 1000).toFixed(2)} kg
                             </span>
                           ) : (
-                            <span className="text-stone-300 italic">Untracked</span>
+                            <span className="text-stone-400 dark:text-stone-500 italic">Untracked</span>
                           )}
                         </td>
                       </tr>

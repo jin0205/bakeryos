@@ -53,9 +53,12 @@ const BakersAssistant: React.FC = () => {
              </div>
            </div>
         )}
+        {!isLoading && !response && (
+          <p className="text-stone-400 dark:text-stone-500 italic text-sm">Your answer will appear here…</p>
+        )}
         {response && (
           <div>
-            <div className="prose prose-stone dark:prose-invert max-w-none mb-6" dangerouslySetInnerHTML={{ __html: response.text.replace(/\n/g, '<br />') }} />
+            <div className="prose prose-stone dark:prose-invert max-w-none mb-6 whitespace-pre-wrap text-stone-800 dark:text-stone-200">{response.text}</div>
             {response.metadata?.groundingChunks && response.metadata.groundingChunks.length > 0 && (
               <div>
                 <h4 className="font-semibold text-stone-700 dark:text-stone-300 text-sm mb-2">Sources:</h4>

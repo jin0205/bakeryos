@@ -58,12 +58,12 @@ const RecipeManagement: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="mb-2">
-                <h2 className="text-2xl font-bold text-stone-800 mb-1">
+                <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">
                     {view === 'library' ? 'Recipe Library' : 'Recipe Workbench'}
                 </h2>
-                <p className="text-stone-600">
-                    {view === 'library' 
-                        ? 'Manage your collection of professional sourdough formulas.' 
+                <p className="text-stone-600 dark:text-stone-400">
+                    {view === 'library'
+                        ? 'Manage your collection of professional sourdough formulas.'
                         : 'Formulate, scale, and analyze your dough.'}
                 </p>
             </div>
@@ -76,7 +76,7 @@ const RecipeManagement: React.FC = () => {
                     onDelete={handleDeleteRecipe}
                 />
             ) : (
-                <div className="animate-slide-in-right">
+                <div className="animate-fade-in">
                     <RecipeCalculator 
                         initialRecipe={activeRecipe}
                         onBack={handleBackToLibrary}

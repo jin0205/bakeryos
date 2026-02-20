@@ -74,11 +74,11 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <SearchIcon className="h-4 w-4 text-stone-400" />
             </div>
-            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search your recipe book..." className="focus:ring-amber-500 focus:border-amber-500 block w-full pl-9 sm:text-sm border-stone-300 dark:border-stone-700 dark:bg-stone-900 rounded-md py-2.5 dark:text-stone-100" />
+            <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search your recipe book..." className="focus:ring-amber-500 focus:border-amber-500 block w-full pl-9 sm:text-sm border border-stone-300 dark:border-stone-700 dark:bg-stone-900 rounded-md py-2.5 dark:text-stone-100" />
           </div>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
-            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="block pl-3 pr-8 py-2 text-base border-stone-300 dark:border-stone-700 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-md bg-white dark:bg-stone-900 dark:text-stone-200 shadow-sm cursor-pointer">
+            <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as any)} className="block pl-3 pr-8 py-2 text-base border border-stone-300 dark:border-stone-700 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-md bg-white dark:bg-stone-900 dark:text-stone-200 shadow-sm cursor-pointer">
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
                 <option value="az">Name (A-Z)</option>

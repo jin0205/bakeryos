@@ -17,7 +17,9 @@ const CostAnalysis: React.FC = () => {
     }
 
     const invStr = localStorage.getItem('sourdough_inventory');
-    if (invStr) setInventory(JSON.parse(invStr));
+    if (invStr) {
+      try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
+    }
   }, []);
 
   // Helper to resolve cost and source

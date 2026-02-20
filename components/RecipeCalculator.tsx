@@ -23,7 +23,9 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
   // --- INITIALIZATION ---
   useEffect(() => {
     const invStr = localStorage.getItem('sourdough_inventory');
-    if (invStr) setInventory(JSON.parse(invStr));
+    if (invStr) {
+      try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
+    }
 
     if (initialRecipe) {
       setCurrentRecipeId(initialRecipe.id);
@@ -123,7 +125,10 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
       };
 
       const recipesStr = localStorage.getItem('sourdough_recipes');
-      const existing: SavedRecipe[] = recipesStr ? JSON.parse(recipesStr) : [];
+      let existing: SavedRecipe[] = [];
+      if (recipesStr) {
+        try { existing = JSON.parse(recipesStr); } catch (e) { console.error('Failed to load recipes', e); }
+      }
       const updated = currentRecipeId 
         ? existing.map(r => r.id === currentRecipeId ? newRecipe : r)
         : [...existing, newRecipe];
@@ -170,7 +175,7 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
                   })}
                   <tr>
                       <td colSpan={4} className="p-2">
-                          <button onClick={() => addItem(isFlour)} className="w-full py-2 text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded transition-colors dashed-border">+ Add {isFlour ? 'Flour' : 'Ingredient'}</button>
+                          <button onClick={() => addItem(isFlour)} className="w-full py-2 text-xs font-bold text-amber-600 dark:text-amber-500 uppercase tracking-wider hover:bg-amber-50 dark:hover:bg-amber-900/20 rounded transition-colors border-2 border-dashed border-amber-200 dark:border-amber-900">+ Add {isFlour ? 'Flour' : 'Ingredient'}</button>
                       </td>
                   </tr>
               </tbody>
@@ -189,7 +194,7 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
                     <div className="text-[10px] font-black uppercase text-stone-400">Total Mass</div>
                     <div className="text-xl font-black text-amber-600">{(totalBatchWeight / 1000).toFixed(2)}kg</div>
                 </div>
-                <button onClick={handleSave} className="bg-stone-800 dark:bg-amber-600 text-white px-8 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg hover:scale-105 transition-all">Save Recipe</button>
+                <button onClick={handleSave} className="bg-stone-800 dark:bg-amber-600 text-white px-8 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg hover:bg-stone-700 dark:hover:bg-amber-700 transition-colors">Save Recipe</button>
             </div>
         </div>
 

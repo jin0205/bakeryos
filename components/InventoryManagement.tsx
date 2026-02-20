@@ -24,10 +24,14 @@ const InventoryManagement: React.FC = () => {
   useEffect(() => {
     const loadData = () => {
         const invStr = localStorage.getItem('sourdough_inventory');
-        if (invStr) setInventory(JSON.parse(invStr));
+        if (invStr) {
+          try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
+        }
 
         const planStr = localStorage.getItem('sourdough_planner_items');
-        if (planStr) setPlannerItems(JSON.parse(planStr) || []);
+        if (planStr) {
+          try { setPlannerItems(JSON.parse(planStr) || []); } catch (e) { console.error('Failed to load planner items', e); }
+        }
     };
     loadData();
     window.addEventListener('storage', loadData);
@@ -349,8 +353,9 @@ const InventoryManagement: React.FC = () => {
                         </td>
                         <td className="px-6 py-5 text-center">
                           {item.isInventory && (
-                            <button 
+                            <button
                               onClick={() => deleteItem(item.id)}
+                              aria-label={`Delete ${item.name}`}
                               className="text-stone-300 hover:text-red-500 transition-colors"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
