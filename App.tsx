@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import Tabs from './components/Tabs';
@@ -8,10 +7,12 @@ import BatchPlanner from './components/BatchPlanner';
 import InventoryManagement from './components/InventoryManagement';
 import CostAnalysis from './components/CostAnalysis';
 
-type Tab = 'management' | 'planner' | 'inventory' | 'cost' | 'lab';
+export type Tab = 'management' | 'planner' | 'inventory' | 'cost' | 'lab';
+export type LabTab = 'assistant' | 'analyzer' | 'science' | 'pdf' | 'converter' | 'ddt' | 'showcase';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('management');
+  const [activeLabTab, setActiveLabTab] = useState<LabTab>('assistant');
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('sourdough_theme');
     if (saved) return saved === 'dark';
@@ -32,18 +33,12 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'management':
-        return <RecipeManagement />;
-      case 'planner':
-        return <BatchPlanner />;
-      case 'inventory':
-        return <InventoryManagement />;
-      case 'cost':
-        return <CostAnalysis />;
-      case 'lab':
-        return <BakingLab />;
-      default:
-        return <RecipeManagement />;
+      case 'management': return <RecipeManagement />;
+      case 'planner':    return <BatchPlanner />;
+      case 'inventory':  return <InventoryManagement />;
+      case 'cost':       return <CostAnalysis />;
+      case 'lab':        return <BakingLab activeTab={activeLabTab} />;
+      default:           return <RecipeManagement />;
     }
   };
 
