@@ -233,7 +233,7 @@ const BatchPlanner: React.FC = () => {
                 <p className="text-xs text-stone-500 italic">Add recipes from above ↑</p>
               </div>
             ) : (
-              <ul className="divide-y divide-stone-800">
+              <ul className="divide-y divide-stone-800 max-h-72 overflow-y-auto">
                 {plannerItems.map(item => (
                   <li key={item.uniqueId} className="px-4 py-3">
                     <div className="flex justify-between items-center mb-1.5">
