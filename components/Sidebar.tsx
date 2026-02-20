@@ -16,7 +16,7 @@ interface SidebarProps {
   toggleTheme: () => void;
 }
 
-const mainNavItems: { id: Tab; label: string; Icon: React.FC<{ className?: string }> }[] = [
+const mainNavItems: { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'management', label: 'Recipe Management', Icon: CalculatorIcon },
   { id: 'planner',    label: 'Batch Planner',     Icon: ClipboardIcon },
   { id: 'inventory',  label: 'Inventory',          Icon: BoxIcon },
@@ -27,7 +27,7 @@ const mainNavItems: { id: Tab; label: string; Icon: React.FC<{ className?: strin
   },
 ];
 
-const labSubItems: { id: LabTab; label: string; Icon: React.FC<{ className?: string }> }[] = [
+const labSubItems: { id: LabTab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'assistant', label: "Baker's Assistant", Icon: SparklesIcon },
   { id: 'analyzer',  label: 'Crumb Analyzer',   Icon: CameraIcon },
   {
@@ -60,8 +60,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const isLabActive = activeTab === 'lab';
 
-  const handleMainNav = (id: Tab) => setActiveTab(id);
-
   const handleLabNav = (id: LabTab) => {
     setActiveTab('lab');
     setActiveLabTab(id);
@@ -84,7 +82,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           return (
             <button
               key={id}
-              onClick={() => handleMainNav(id)}
+              onClick={() => setActiveTab(id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
                 isActive
                   ? 'bg-amber-600/20 text-amber-400 border-l-2 border-amber-500'
@@ -127,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={toggleTheme}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-stone-400 hover:text-stone-100 hover:bg-stone-800 transition-colors"
-          aria-label="Toggle dark mode"
+          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {isDarkMode ? (
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-amber-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
