@@ -45,6 +45,11 @@ const BakersAssistant: React.FC = () => {
       </form>
 
       <div className="bg-stone-50 dark:bg-stone-800/40 p-6 rounded-lg border border-stone-200 dark:border-stone-700/60 min-h-[200px] transition-colors duration-300">
+        {!isLoading && !response && (
+          <div className="flex items-center justify-center h-full min-h-[140px]">
+            <p className="text-stone-400 dark:text-stone-600 text-sm italic">Your answer will appear here…</p>
+          </div>
+        )}
         {isLoading && (
            <div className="flex items-center justify-center h-full">
              <div className="text-center">

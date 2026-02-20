@@ -90,7 +90,7 @@ const CostAnalysis: React.FC = () => {
 
         <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">
             <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">
-                <thead className="bg-stone-50 dark:bg-stone-950/40">
+                <thead className="bg-stone-50 dark:bg-stone-950/40 sticky top-0 z-10">
                     <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Recipe Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Batch Specs</th>
