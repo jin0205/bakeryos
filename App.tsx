@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import Tabs from './components/Tabs';
+import Sidebar from './components/Sidebar';
 import RecipeManagement from './components/RecipeManagement';
 import BakingLab from './components/BakingLab';
 import BatchPlanner from './components/BatchPlanner';
@@ -43,18 +42,19 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-stone-100 dark:bg-stone-950 text-stone-800 dark:text-stone-100 font-sans transition-colors duration-300">
-      <Header isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl shadow-lg overflow-hidden border border-stone-200 dark:border-stone-800">
-          <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
-          <div className="p-6 md:p-10">
-            {renderContent()}
-          </div>
+    <div className="flex h-screen bg-stone-950 text-stone-100 font-sans overflow-hidden">
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        activeLabTab={activeLabTab}
+        setActiveLabTab={setActiveLabTab}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+      />
+      <main className="flex-1 overflow-y-auto bg-stone-950">
+        <div className="px-8 py-8 min-h-full">
+          {renderContent()}
         </div>
-        <footer className="text-center text-stone-500 dark:text-stone-400 mt-8 text-sm">
-          <p>&copy; {new Date().getFullYear()} Sourdough Pro AI. Elevate your baking.</p>
-        </footer>
       </main>
     </div>
   );
