@@ -211,6 +211,25 @@ export const getRecipeSuggestions = async (recipeContext: string, goal: string):
     }
 };
 
+type ChatTurn = { role: 'user' | 'model'; parts: [{ text: string }] };
+
+export async function getChatResponse(
+  history: ChatTurn[],
+  systemInstruction: string
+): Promise<string> {
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-preview',
+      contents: history,
+      config: { systemInstruction },
+    });
+    return response.text || "No response generated.";
+  } catch (error) {
+    console.error("Error getting chat response:", error);
+    return "Sorry, I couldn't get a response. Please try again.";
+  }
+}
+
 // Updated model to gemini-3-flash-preview for search grounding tasks
 export const suggestIngredientCost = async (ingredientName: string): Promise<number | null> => {
     try {

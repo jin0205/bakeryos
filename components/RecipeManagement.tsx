@@ -57,15 +57,13 @@ const RecipeManagement: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="mb-2">
-                <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">
-                    {view === 'library' ? 'Recipe Library' : 'Recipe Workbench'}
-                </h2>
-                <p className="text-stone-600 dark:text-stone-400">
-                    {view === 'library'
-                        ? 'Manage your collection of professional sourdough formulas.'
-                        : 'Formulate, scale, and analyze your dough.'}
+            <div className="mb-6">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">
+                    FORMULAS / {view === 'library' ? 'Formula Library' : 'Formula Workbench'}
                 </p>
+                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                    {view === 'library' ? 'Formula Library' : 'Formula Workbench'}
+                </h1>
             </div>
 
             {view === 'library' ? (

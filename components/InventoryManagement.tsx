@@ -155,27 +155,32 @@ const InventoryManagement: React.FC = () => {
   }, [plannerItems]);
 
   return (
-    <div className="animate-fade-in max-w-6xl mx-auto">
+    <div className="animate-fade-in">
       <datalist id="common-ingredients">
         {COMMON_INGREDIENTS_LIST.map((name, idx) => <option key={idx} value={name} />)}
       </datalist>
 
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-3xl font-black text-stone-900 dark:text-stone-50 mb-1 tracking-tight">Professional Procurement</h2>
-          <p className="text-stone-500 dark:text-stone-400">Receive stock, calculate unit costs, and track bakery inventory.</p>
-        </div>
-        <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl p-4 flex items-center text-amber-800 dark:text-amber-400 text-sm shadow-sm transition-colors">
-          <CalculatorIcon className="w-5 h-5 mr-3" />
-          <span>Real-time link active: <strong>{plannerItems.length}</strong> recipes in Batch Planner.</span>
+      <div className="mb-6">
+        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">OPERATIONS / Inventory</p>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Inventory</h1>
+          {plannerItems.length > 0 && (
+            <span className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded px-2.5 py-1">
+              <CalculatorIcon className="w-3.5 h-3.5" />
+              {plannerItems.length} formula{plannerItems.length !== 1 ? 's' : ''} in Batch Builder
+            </span>
+          )}
         </div>
       </div>
 
       {/* Procurement Form */}
-      <div className="bg-white dark:bg-stone-900 p-8 rounded-2xl border border-stone-200 dark:border-stone-800 shadow-xl mb-10 transition-colors">
-        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-stone-400 mb-6">Receive New Inventory</h3>
+      <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm mb-4 overflow-hidden transition-colors">
+        <div className="px-4 py-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/40">
+          <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Receive New Inventory</h3>
+        </div>
+        <div className="p-4">
         <form onSubmit={addInventoryItem}>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-4">
             <div className="md:col-span-4">
               <label className="block text-[10px] font-black text-stone-500 uppercase mb-2">Ingredient</label>
               <input
@@ -184,7 +189,7 @@ const InventoryManagement: React.FC = () => {
                 value={newItemName}
                 onChange={(e) => setNewItemName(e.target.value)}
                 placeholder="e.g. Bread Flour"
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all font-bold dark:text-stone-100"
+                className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-md focus:ring-2 focus:ring-amber-500 transition-all font-medium text-sm dark:text-stone-100"
               />
             </div>
             
@@ -194,7 +199,7 @@ const InventoryManagement: React.FC = () => {
                 type="number"
                 value={qtyOrdered}
                 onChange={(e) => setQtyOrdered(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all font-bold dark:text-stone-100"
+                className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-md focus:ring-2 focus:ring-amber-500 transition-all font-medium text-sm dark:text-stone-100"
               />
               <span className="text-[9px] text-stone-400 mt-1 block">Bags/Cases</span>
             </div>
@@ -208,12 +213,12 @@ const InventoryManagement: React.FC = () => {
                   value={weightPerItem}
                   onChange={(e) => setWeightPerItem(e.target.value)}
                   placeholder="e.g. 50"
-                  className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-950 border border-r-0 border-stone-200 dark:border-stone-800 rounded-l-xl focus:ring-2 focus:ring-amber-500 transition-all font-bold dark:text-stone-100"
+                  className="w-full px-3 py-2 bg-white dark:bg-stone-950 border border-r-0 border-stone-300 dark:border-stone-700 rounded-l-md focus:ring-2 focus:ring-amber-500 transition-all font-medium text-sm dark:text-stone-100"
                 />
                 <select
                   value={unit}
                   onChange={(e) => setUnit(e.target.value as UnitOfMeasure)}
-                  className="bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-800 rounded-r-xl px-3 text-xs font-black uppercase tracking-widest text-stone-600 dark:text-stone-300"
+                  className="bg-stone-100 dark:bg-stone-800 border border-stone-300 dark:border-stone-700 rounded-r-md px-2 text-xs font-semibold uppercase text-stone-600 dark:text-stone-300"
                 >
                   <option value="lb">lb</option>
                   <option value="kg">kg</option>
@@ -227,14 +232,14 @@ const InventoryManagement: React.FC = () => {
             <div className="md:col-span-3">
               <label className="block text-[10px] font-black text-stone-500 uppercase mb-2">Cost per Bag/Case</label>
               <div className="relative">
-                <span className="absolute left-4 top-3.5 text-stone-400 font-bold">$</span>
+                <span className="absolute left-3 top-2.5 text-stone-400 text-sm">$</span>
                 <input
                   type="number"
                   step="0.01"
                   value={costPerPackage}
                   onChange={(e) => setCostPerPackage(e.target.value)}
                   placeholder="0.00"
-                  className="w-full pl-8 pr-4 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all font-bold dark:text-stone-100"
+                  className="w-full pl-7 pr-3 py-2 bg-white dark:bg-stone-950 border border-stone-300 dark:border-stone-700 rounded-md focus:ring-2 focus:ring-amber-500 transition-all font-medium text-sm dark:text-stone-100"
                 />
               </div>
             </div>
@@ -246,7 +251,7 @@ const InventoryManagement: React.FC = () => {
                 value={itemsPerPackage}
                 onChange={(e) => setItemsPerPackage(e.target.value)}
                 placeholder="1 (e.g. 60 for eggs)"
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-xl focus:ring-2 focus:ring-amber-500 transition-all font-bold dark:text-stone-100"
+                className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded-md focus:ring-2 focus:ring-amber-500 transition-all font-medium text-sm dark:text-stone-100"
               />
             </div>
 
@@ -254,7 +259,7 @@ const InventoryManagement: React.FC = () => {
               <button
                 type="submit"
                 disabled={!newItemName || !procurementPreview}
-                className="w-full py-3.5 bg-stone-900 dark:bg-amber-600 text-white rounded-xl font-black uppercase tracking-widest hover:bg-stone-800 dark:hover:bg-amber-700 disabled:bg-stone-200 dark:disabled:bg-stone-800 disabled:cursor-not-allowed transition-all shadow-lg"
+                className="w-full py-2.5 bg-stone-900 dark:bg-amber-600 text-white rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-stone-800 dark:hover:bg-amber-700 disabled:bg-stone-200 dark:disabled:bg-stone-800 disabled:cursor-not-allowed transition-all"
               >
                 Add to Stock
               </button>
@@ -262,7 +267,7 @@ const InventoryManagement: React.FC = () => {
           </div>
 
           {procurementPreview && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-stone-50 dark:bg-stone-950/50 p-6 rounded-2xl border border-stone-100 dark:border-stone-800 animate-fade-in transition-colors">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-stone-50 dark:bg-stone-950/50 p-4 rounded-lg border border-stone-200 dark:border-stone-800 animate-fade-in transition-colors">
               <div>
                 <span className="block text-[9px] font-black text-stone-400 uppercase tracking-widest">Total Weight</span>
                 <span className="text-xl font-black text-stone-800 dark:text-stone-200">
@@ -292,20 +297,24 @@ const InventoryManagement: React.FC = () => {
             </div>
           )}
         </form>
+        </div>
       </div>
 
       {/* Inventory Display */}
-      <div className="bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">
+      <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">
+        <div className="px-4 py-3 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/40">
+          <h3 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Stock Ledger</h3>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-stone-50 dark:bg-stone-950/50 border-b border-stone-100 dark:border-stone-800">
               <tr>
-                <th className="px-6 py-4 text-[10px] font-black text-stone-400 uppercase tracking-widest">Ingredient</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Current Stock</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-amber-500 uppercase tracking-widest">Allocated</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Balance</th>
-                <th className="px-6 py-4 text-right text-[10px] font-black text-stone-400 uppercase tracking-widest">Cost/KG</th>
-                <th className="px-6 py-4 text-center text-[10px] font-black text-stone-400 uppercase tracking-widest">Actions</th>
+                <th className="px-4 py-3 text-xs font-medium text-stone-500 uppercase tracking-wider">Ingredient</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Current Stock</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-amber-500 uppercase tracking-wider">Allocated</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Balance</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Cost/KG</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100 dark:divide-stone-800/50">
@@ -328,7 +337,7 @@ const InventoryManagement: React.FC = () => {
 
                     return (
                       <tr key={item.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/30 transition-colors">
-                        <td className="px-6 py-5">
+                        <td className="px-4 py-3">
                           <div className="font-bold text-stone-900 dark:text-stone-100">{item.name}</div>
                           {!item.isInventory && <span className="text-[9px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full uppercase font-black">Not Tracked</span>}
                           {isLow && !isCritical && <span className="text-[9px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase font-black">Low Stock</span>}

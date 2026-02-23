@@ -4,17 +4,20 @@ import { BoxIcon } from './icons/BoxIcon';
 import { CalculatorIcon } from './icons/CalculatorIcon';
 import { LabIcon } from './icons/LabIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
-import { CameraIcon } from './icons/CameraIcon';
 import { DocumentIcon } from './icons/DocumentIcon';
+import { CalendarIcon } from './icons/CalendarIcon';
 import { LabTab } from './BakingLab';
+import { ProductionTab } from '../App';
 
-type Tab = 'management' | 'planner' | 'inventory' | 'cost' | 'lab';
+type Tab = 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 
 interface SidebarProps {
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
   activeLabTab: LabTab;
   setActiveLabTab: (tab: LabTab) => void;
+  activeProductionTab: ProductionTab;
+  setActiveProductionTab: (tab: ProductionTab) => void;
   isDarkMode: boolean;
   toggleTheme: () => void;
 }
@@ -26,33 +29,39 @@ const DDTIcon: React.ComponentType<{ className?: string }> = ({ className }) => 
 );
 
 const mainNavItems: { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'management', label: 'Recipe Library', Icon: ClipboardIcon },
-  { id: 'planner',    label: 'Batch Planner',  Icon: ClipboardIcon },
-  { id: 'inventory',  label: 'Inventory',       Icon: BoxIcon },
-  { id: 'cost',       label: 'Cost Analysis',   Icon: CalculatorIcon },
-  { id: 'lab',        label: 'Baking Lab',      Icon: LabIcon },
+  { id: 'formulas',    label: 'Formula Library', Icon: ClipboardIcon },
+  { id: 'production',  label: 'Production',      Icon: ClipboardIcon },
+  { id: 'inventory',   label: 'Inventory',        Icon: BoxIcon },
+  { id: 'cost',        label: 'Cost & Margin',    Icon: CalculatorIcon },
+  { id: 'lab',         label: 'R&D Lab',          Icon: LabIcon },
 ];
 
 const labSubItems: { id: LabTab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: 'assistant', label: "Baker's Assistant",  Icon: SparklesIcon },
-  { id: 'analyzer',  label: 'Crumb Analyzer',     Icon: CameraIcon },
-  { id: 'science',   label: 'Dev & Fermentation', Icon: LabIcon },
-  { id: 'ddt',       label: 'DDT Water Temp',     Icon: DDTIcon },
-  { id: 'pdf',       label: 'Recipe Importer',    Icon: DocumentIcon },
-  { id: 'converter', label: 'Converter',          Icon: CalculatorIcon },
+  { id: 'assistant',    label: "Baker's Assistant",   Icon: SparklesIcon },
+  { id: 'fermentation', label: 'Fermentation Engine', Icon: LabIcon },
+  { id: 'ddt',          label: 'DDT Water Temp',      Icon: DDTIcon },
+  { id: 'pdf',          label: 'Recipe Importer',     Icon: DocumentIcon },
+  { id: 'converter',    label: 'Converter',           Icon: CalculatorIcon },
+];
+
+const productionSubItems: { id: ProductionTab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
+  { id: 'work-orders',   label: 'Work Orders',         Icon: ClipboardIcon },
+  { id: 'schedule',      label: 'Production Schedule', Icon: CalendarIcon },
+  { id: 'batch-builder', label: 'Batch Builder',       Icon: CalculatorIcon },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
-  activeTab, setActiveTab, activeLabTab, setActiveLabTab, isDarkMode, toggleTheme
+  activeTab, setActiveTab, activeLabTab, setActiveLabTab,
+  activeProductionTab, setActiveProductionTab, isDarkMode, toggleTheme
 }) => {
   return (
     <aside className="w-64 flex-shrink-0 h-screen sticky top-0 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 flex flex-col transition-colors duration-300">
       {/* Branding */}
       <div className="px-6 py-5 border-b border-stone-200 dark:border-stone-800">
         <h1 className="text-lg font-black text-stone-900 dark:text-stone-50 tracking-tight">
-          Sourdough <span className="text-amber-600">Pro AI</span>
+          Bakery<span className="text-amber-600">OS</span>
         </h1>
-        <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">Professional Baking Platform</p>
+        <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">Production Intelligence Platform</p>
       </div>
 
       {/* Main Navigation */}
@@ -72,6 +81,26 @@ const Sidebar: React.FC<SidebarProps> = ({
           </button>
         ))}
 
+        {/* Production sub-navigation */}
+        {activeTab === 'production' && (
+          <div className="ml-3 pl-3 border-l-2 border-amber-200 dark:border-amber-800/40 space-y-0.5 pt-1">
+            {productionSubItems.map(({ id, label, Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveProductionTab(id)}
+                className={`flex items-center w-full px-3 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                  activeProductionTab === id
+                    ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                    : 'text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
+                }`}
+              >
+                <Icon className={`mr-2.5 h-4 w-4 flex-shrink-0 ${activeProductionTab === id ? 'text-amber-500' : 'text-stone-400'}`} />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Baking Lab sub-navigation */}
         {activeTab === 'lab' && (
           <div className="ml-3 pl-3 border-l-2 border-amber-200 dark:border-amber-800/40 space-y-0.5 pt-1">
@@ -89,17 +118,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {label}
               </button>
             ))}
-            <button
-              onClick={() => setActiveLabTab('showcase')}
-              className={`flex items-center w-full px-3 py-2.5 text-sm font-bold rounded-lg transition-colors ${
-                activeLabTab === 'showcase'
-                  ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400'
-                  : 'text-stone-500 dark:text-stone-400 hover:bg-stone-50 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100'
-              }`}
-            >
-              <SparklesIcon className={`mr-2.5 h-4 w-4 flex-shrink-0 ${activeLabTab === 'showcase' ? 'text-indigo-500' : 'text-stone-400'}`} />
-              Design Themes
-            </button>
           </div>
         )}
       </nav>

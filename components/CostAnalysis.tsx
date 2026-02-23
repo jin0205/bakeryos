@@ -86,8 +86,8 @@ const CostAnalysis: React.FC = () => {
   return (
     <div className="animate-fade-in">
         <div className="mb-6">
-            <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">Cost Analysis</h2>
-            <p className="text-stone-600 dark:text-stone-400">Profitability breakdown for all saved recipes based on real-time inventory prices.</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">OPERATIONS / Cost &amp; Margin</p>
+            <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Cost &amp; Margin</h1>
         </div>
 
         <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">

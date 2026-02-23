@@ -1,7 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SavedRecipe, PlannerItem, InventoryItem, Ingredient } from '../types';
 
-const BatchPlanner: React.FC = () => {
+interface BatchPlannerProps {
+  onCreateWorkOrder?: (items: PlannerItem[], scheduledDate: string, status: 'draft' | 'scheduled') => void;
+}
+
+const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
   const [plannerItems, setPlannerItems] = useState<PlannerItem[]>([]);
   const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
@@ -9,6 +13,11 @@ const BatchPlanner: React.FC = () => {
   // Scaling State
   const [batchScalingMode, setBatchScalingMode] = useState<'percentage' | 'weight'>('percentage');
   const [batchScaleValue, setBatchScaleValue] = useState<string>('');
+
+  // Work Order State
+  const [showWOMenu, setShowWOMenu] = useState<boolean>(false);
+  const [scheduledDate, setScheduledDate] = useState<string>('');
+  const [woStatus, setWoStatus] = useState<'draft' | 'scheduled'>('scheduled');
 
   // Load saved recipes, persisted plan, and inventory
   useEffect(() => {
@@ -185,27 +194,82 @@ const BatchPlanner: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6 flex justify-between items-end">
-        <div>
-          <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-100 mb-1">Batch Production Planner</h2>
-          <p className="text-stone-600 dark:text-stone-400">Combine multiple recipes into a master production list.</p>
+      <div className="mb-6">
+        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">PRODUCTION / Batch Builder</p>
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Batch Builder</h1>
+          {plannerItems.length > 0 && (
+            <div className="flex items-center gap-2 relative">
+              {/* Save as Work Order */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowWOMenu(!showWOMenu)}
+                  className="border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Save as Work Order
+                </button>
+                {showWOMenu && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl p-4 z-10">
+                    <p className="text-xs font-black uppercase tracking-widest text-stone-400 mb-3">New Work Order</p>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1">Scheduled Date</label>
+                        <input
+                          type="date"
+                          value={scheduledDate}
+                          onChange={e => setScheduledDate(e.target.value)}
+                          className="w-full text-sm border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-950 rounded-lg px-3 py-2 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-600 dark:text-stone-400 mb-1">Status</label>
+                        <div className="flex gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input type="radio" name="woStatus" value="scheduled" checked={woStatus === 'scheduled'} onChange={() => setWoStatus('scheduled')} className="accent-amber-600" />
+                            <span className="text-sm text-stone-700 dark:text-stone-300">Scheduled</span>
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input type="radio" name="woStatus" value="draft" checked={woStatus === 'draft'} onChange={() => setWoStatus('draft')} className="accent-amber-600" />
+                            <span className="text-sm text-stone-700 dark:text-stone-300">Draft</span>
+                          </label>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          onCreateWorkOrder?.(plannerItems, scheduledDate, woStatus);
+                          setShowWOMenu(false);
+                          setScheduledDate('');
+                        }}
+                        className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold rounded-lg transition-colors"
+                      >
+                        Save Work Order
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Release to Production */}
+              <button
+                onClick={handleCommitBake}
+                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Release to Production
+              </button>
+            </div>
+          )}
         </div>
-        {plannerItems.length > 0 && (
-          <button 
-            onClick={handleCommitBake}
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition-all flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Commit & Start Bake
-          </button>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors">
+          <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors text-sm">
             <h3 className="font-semibold text-stone-800 dark:text-stone-200 mb-3">Add Recipes</h3>
             <ul className="space-y-2 max-h-96 overflow-y-auto">
               {savedRecipes.map(recipe => (
@@ -220,7 +284,7 @@ const BatchPlanner: React.FC = () => {
             </ul>
           </div>
 
-          <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors">
+          <div className="bg-white dark:bg-stone-900/60 p-4 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm transition-colors text-sm">
             <div className="flex justify-between items-center mb-3">
                <h3 className="font-semibold text-stone-800 dark:text-stone-200">Current Plan</h3>
                {plannerItems.length > 0 && (

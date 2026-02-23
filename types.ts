@@ -55,10 +55,36 @@ export interface InventoryItem {
   id: string;
   name: string;
   quantity: number; // In grams
-  costPerKg?: number; 
+  costPerKg?: number;
   lastUpdated: string;
   packageWeight?: number;
   packageUnit?: UnitOfMeasure;
   itemsPerPackage?: number;
   costPerPackage?: number;
+}
+
+export type WorkOrderStatus = 'draft' | 'scheduled' | 'in-production' | 'complete';
+
+export interface WorkOrderLineItem {
+  recipeId: string;
+  recipeName: string;
+  recipeVersion: number;
+  count: number;
+  weightPerUnit: number;
+  ingredientRequirements: Record<string, number>;
+}
+
+export interface WorkOrder {
+  id: string;
+  woNumber: number;
+  status: WorkOrderStatus;
+  createdAt: string;
+  scheduledDate: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+  lineItems: WorkOrderLineItem[];
+  totalDoughKg: number;
+  estimatedCost: number;
+  inventoryDeducted: boolean;
+  notes: string;
 }
