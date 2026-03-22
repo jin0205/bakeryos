@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code — ignore local state, track project config
+.claude/worktrees/
+.claude/memory/
+.claude/settings.local.json
