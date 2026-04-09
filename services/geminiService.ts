@@ -2,11 +2,7 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { GeminiGroundedResponse, GroundingChunk } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable is not set.");
-}
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = process.env.API_KEY ? new GoogleGenAI({ apiKey: process.env.API_KEY }) : null;
 
 async function fileToGenerativePart(file: File): Promise<{ inlineData: { data: string; mimeType: string; }; }> {
   const base64EncodedDataPromise = new Promise<string>((resolve) => {
