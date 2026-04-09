@@ -5,14 +5,16 @@ import FermentationEngine from './FermentationEngine';
 import RecipeImporter from './RecipeImporter';
 import MeasurementConverter from './MeasurementConverter';
 import DDTCalculator from './DDTCalculator';
+import RecipeBrainstormer from './RecipeBrainstormer';
 
-export type LabTab = 'assistant' | 'fermentation' | 'pdf' | 'converter' | 'ddt';
+export type LabTab = 'assistant' | 'fermentation' | 'pdf' | 'converter' | 'ddt' | 'brainstorm';
 
 interface BakingLabProps {
   activeLabTab: LabTab;
+  onNavigateToLibrary?: () => void;
 }
 
-const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab }) => {
+const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab, onNavigateToLibrary }) => {
   return (
     <div className="animate-fade-in">
       <div className="bg-white dark:bg-stone-900/40 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800/60 p-6 min-h-[600px] transition-colors duration-300">
@@ -30,6 +32,11 @@ const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab }) => {
         )}
         {activeLabTab === 'converter' && (
           <div className="animate-fade-in"><MeasurementConverter /></div>
+        )}
+        {activeLabTab === 'brainstorm' && (
+          <div className="animate-fade-in">
+            <RecipeBrainstormer onNavigateToLibrary={onNavigateToLibrary} />
+          </div>
         )}
       </div>
     </div>

@@ -231,6 +231,84 @@ export async function getChatResponse(
 }
 
 // Updated model to gemini-3-flash-preview for search grounding tasks
+export interface BrainstormedRecipeJSON {
+  name: string;
+  description: string;
+  numberOfLoaves: number;
+  weightPerLoaf: number;
+  targetLoafWeight: number;
+  flours: { name: string; percentage: number; weight: number }[];
+  ingredients: { name: string; percentage: number; weight: number }[];
+}
+
+export const brainstormRecipe = async (
+  description: string,
+  totalFlourWeight: number = 1000
+): Promise<BrainstormedRecipeJSON> => {
+  const prompt = `
+You are a world-class master baker and food scientist specializing in artisan sourdough bread.
+
+A baker has described a recipe idea:
+"${description}"
+
+Generate a complete sourdough recipe using Baker's Percentages based on a total flour weight of ${totalFlourWeight}g.
+
+CLASSIFICATION RULES:
+- "flours" array: ALL dry grain ingredients only (bread flour, whole wheat, rye, spelt, einkorn, semolina, etc.)
+- "ingredients" array: ALL other components (water, salt, levain/starter, honey, seeds, oil, add-ins, etc.)
+- Flour percentages must sum to exactly 100%
+- All other ingredient percentages are relative to total flour weight (Baker's %)
+
+SOURDOUGH REQUIREMENTS:
+- Always include Levain (or Starter) as an ingredient, typically 15-25% unless described otherwise
+- Always include Water and Salt
+- Hydration (water %) should match the described style: slack/open-crumb ~75-85%, standard ~68-75%, firm ~60-68%
+- Salt is typically 1.8-2.2%
+
+BATCH SIZE:
+- numberOfLoaves: 1-4 loaves (choose a sensible small batch)
+- weightPerLoaf and targetLoafWeight: calculate as total dough weight / numberOfLoaves
+
+${NORMALIZATION_INSTRUCTIONS}
+
+Return ONLY valid JSON with this exact structure (no markdown, no extra text):
+{
+  "name": "descriptive recipe name",
+  "description": "1-2 sentence flavor profile and baking note",
+  "numberOfLoaves": number,
+  "weightPerLoaf": number,
+  "targetLoafWeight": number,
+  "flours": [
+    { "name": "string", "percentage": number, "weight": number }
+  ],
+  "ingredients": [
+    { "name": "string", "percentage": number, "weight": number }
+  ]
+}
+
+Where each weight = (percentage / 100) * ${totalFlourWeight}
+  `;
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+      config: { responseMimeType: 'application/json' },
+    });
+
+    const text = response.text || '{}';
+    try {
+      return JSON.parse(text) as BrainstormedRecipeJSON;
+    } catch {
+      throw new Error('AI returned an unreadable response. Please try again.');
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('unreadable')) throw error;
+    console.error('Error brainstorming recipe:', error);
+    throw new Error('Failed to generate recipe. Please check your connection and try again.');
+  }
+};
+
 export const suggestIngredientCost = async (ingredientName: string): Promise<number | null> => {
     try {
         const prompt = `
