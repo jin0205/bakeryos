@@ -111,7 +111,7 @@ const App: React.FC = () => {
         }
       case 'inventory':  return <InventoryManagement />;
       case 'cost':       return <CostAnalysis />;
-      case 'lab':        return <BakingLab activeLabTab={activeLabTab} />;
+      case 'lab':        return <BakingLab activeLabTab={activeLabTab} onNavigateToLibrary={() => handleSetActiveTab('formulas')} />;
       default:           return <RecipeManagement />;
     }
   };

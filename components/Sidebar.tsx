@@ -5,6 +5,7 @@ import { CalculatorIcon } from './icons/CalculatorIcon';
 import { LabIcon } from './icons/LabIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { DocumentIcon } from './icons/DocumentIcon';
+import { LightbulbIcon } from './icons/LightbulbIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
 import { LabTab } from './BakingLab';
 import { ProductionTab } from '../App';
@@ -38,6 +39,7 @@ const mainNavItems: { id: Tab; label: string; Icon: React.ComponentType<{ classN
 
 const labSubItems: { id: LabTab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'assistant',    label: "Baker's Assistant",   Icon: SparklesIcon },
+  { id: 'brainstorm',   label: 'Recipe Brainstormer', Icon: LightbulbIcon },
   { id: 'fermentation', label: 'Fermentation Engine', Icon: LabIcon },
   { id: 'ddt',          label: 'DDT Water Temp',      Icon: DDTIcon },
   { id: 'pdf',          label: 'Recipe Importer',     Icon: DocumentIcon },
