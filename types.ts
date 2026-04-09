@@ -8,21 +8,6 @@ export interface Ingredient {
   weight?: number; 
 }
 
-export interface GroundingChunk {
-  web?: {
-    uri: string;
-    title: string;
-  };
-}
-
-export interface GroundingMetadata {
-  groundingChunks?: GroundingChunk[];
-}
-
-export interface GeminiGroundedResponse {
-  text: string;
-  metadata?: GroundingMetadata;
-}
 
 export interface RecipeSnapshot {
   numberOfLoaves: number; // This acts as the "Batch Multiplier"

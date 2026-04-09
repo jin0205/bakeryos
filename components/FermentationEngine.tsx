@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getComplexResponse } from '../services/geminiService';
+import { getComplexResponse } from '../services/claudeService';
 import { SavedRecipe } from '../types';
 import MarkdownRenderer from './MarkdownRenderer';
 import Spinner from './Spinner';

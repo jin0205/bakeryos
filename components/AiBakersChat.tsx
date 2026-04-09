@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getChatResponse } from '../services/geminiService';
+import { getChatResponse } from '../services/claudeService';
 import { SavedRecipe, InventoryItem, PlannerItem } from '../types';
 import MarkdownRenderer from './MarkdownRenderer';
 import Spinner from './Spinner';
@@ -109,8 +109,8 @@ const AiBakersChat: React.FC = () => {
     setIsLoading(true);
 
     const history = nextMessages.map(m => ({
-      role: m.role as 'user' | 'model',
-      parts: [{ text: m.content }] as [{ text: string }],
+      role: (m.role === 'model' ? 'assistant' : 'user') as 'user' | 'assistant',
+      content: m.content,
     }));
 
     const responseText = await getChatResponse(history, systemInstruction);

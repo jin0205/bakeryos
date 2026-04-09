@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SparklesIcon } from './icons/SparklesIcon';
-import { brainstormRecipe, BrainstormedRecipeJSON } from '../services/geminiService';
+import { brainstormRecipe, BrainstormedRecipeJSON } from '../services/claudeService';
 import { SavedRecipe, Ingredient } from '../types';
 
 interface RecipeBrainstormerProps {
