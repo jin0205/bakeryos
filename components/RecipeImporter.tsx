@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { parseRecipePdf, parseRecipeText } from '../services/geminiService';
+import { parseRecipePdf, parseRecipeText } from '../services/claudeService';
 import { SavedRecipe, Ingredient } from '../types';
 import Spinner from './Spinner';
 import { DocumentIcon } from './icons/DocumentIcon';

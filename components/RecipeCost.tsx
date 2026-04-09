@@ -4,7 +4,7 @@ import { Ingredient, InventoryItem } from '../types';
 import { BoxIcon } from './icons/BoxIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import Spinner from './Spinner';
-import { suggestIngredientCost } from '../services/geminiService';
+import { suggestIngredientCost } from '../services/claudeService';
 
 interface RecipeCostProps {
   ingredients: Ingredient[];
