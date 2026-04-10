@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Sidebar from './components/Sidebar';
 import RecipeManagement from './components/RecipeManagement';
 import BakingLab, { LabTab } from './components/BakingLab';
@@ -133,6 +134,7 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </main>
+      <Analytics />
     </div>
   );
 };
