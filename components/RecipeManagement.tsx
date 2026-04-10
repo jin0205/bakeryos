@@ -59,7 +59,7 @@ const RecipeManagement: React.FC = () => {
         <div className="space-y-6">
             <div className="mb-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">
-                    FORMULAS / {view === 'library' ? 'Formula Library' : 'Formula Workbench'}
+                    {view === 'library' ? 'FORMULA LIBRARY' : 'FORMULAS / Formula Workbench'}
                 </p>
                 <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
                     {view === 'library' ? 'Formula Library' : 'Formula Workbench'}

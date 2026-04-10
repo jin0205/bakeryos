@@ -14,10 +14,32 @@ import { PlannerItem, WorkOrder, WorkOrderLineItem } from './types';
 type Tab = 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
 
+const VALID_TABS: Tab[] = ['formulas', 'production', 'inventory', 'cost', 'lab'];
+const VALID_PRODUCTION_TABS: ProductionTab[] = ['work-orders', 'schedule', 'batch-builder'];
+const VALID_LAB_TABS: LabTab[] = ['assistant', 'brainstorm', 'fermentation', 'ddt', 'pdf', 'converter'];
+
+function parseHash(): { tab: Tab; productionTab: ProductionTab; labTab: LabTab } {
+  const hash = window.location.hash.replace(/^#\/?/, '');
+  const [segment1, segment2] = hash.split('/') as [string, string];
+  const tab = VALID_TABS.includes(segment1 as Tab) ? (segment1 as Tab) : 'formulas';
+  const productionTab = (tab === 'production' && VALID_PRODUCTION_TABS.includes(segment2 as ProductionTab))
+    ? (segment2 as ProductionTab) : 'work-orders';
+  const labTab = (tab === 'lab' && VALID_LAB_TABS.includes(segment2 as LabTab))
+    ? (segment2 as LabTab) : 'assistant';
+  return { tab, productionTab, labTab };
+}
+
+function buildHash(tab: Tab, productionTab: ProductionTab, labTab: LabTab): string {
+  if (tab === 'production') return `#/${tab}/${productionTab}`;
+  if (tab === 'lab') return `#/${tab}/${labTab}`;
+  return `#/${tab}`;
+}
+
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('formulas');
-  const [activeLabTab, setActiveLabTab] = useState<LabTab>('assistant');
-  const [activeProductionTab, setActiveProductionTab] = useState<ProductionTab>('work-orders');
+  const initial = parseHash();
+  const [activeTab, setActiveTab] = useState<Tab>(initial.tab);
+  const [activeLabTab, setActiveLabTab] = useState<LabTab>(initial.labTab);
+  const [activeProductionTab, setActiveProductionTab] = useState<ProductionTab>(initial.productionTab);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('bakeryos_theme');
     if (saved) return saved === 'dark';
@@ -35,6 +57,24 @@ const App: React.FC = () => {
   }, [isDarkMode]);
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
+
+  // Sync hash → state (browser back/forward)
+  useEffect(() => {
+    const onHashChange = () => {
+      const { tab, productionTab, labTab } = parseHash();
+      setActiveTab(tab);
+      setActiveProductionTab(productionTab);
+      setActiveLabTab(labTab);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  // Sync state → hash
+  useEffect(() => {
+    const next = buildHash(activeTab, activeProductionTab, activeLabTab);
+    if (window.location.hash !== next) window.location.hash = next;
+  }, [activeTab, activeProductionTab, activeLabTab]);
 
   const handleSetActiveTab = (tab: Tab) => {
     setActiveTab(tab);
@@ -130,7 +170,7 @@ const App: React.FC = () => {
         toggleTheme={toggleTheme}
       />
       <main className="flex-1 overflow-y-auto">
-        <div className="p-8">
+        <div className="p-6">
           {renderContent()}
         </div>
       </main>

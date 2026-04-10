@@ -73,8 +73,19 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search formulas…"
-            className="block w-full pl-9 pr-3 py-2 text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
+            className="block w-full pl-9 pr-8 py-2 text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
           />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              aria-label="Clear search"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 cursor-pointer transition-colors"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
           <select
@@ -100,10 +111,17 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
         {filteredAndSortedRecipes.length === 0 ? (
           <div className="py-16 text-center">
             <ClipboardIcon className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
-            <p className="mt-3 text-sm text-stone-500 dark:text-stone-400">Your library is empty.</p>
-            <button onClick={onCreate} className="mt-1 text-sm text-amber-600 hover:text-amber-700 font-medium">
-              Create your first formula
-            </button>
+            <p className="mt-3 text-sm text-stone-500 dark:text-stone-400">
+              {searchTerm ? `No formulas matching "${searchTerm}"` : 'Your library is empty.'}
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={onCreate}
+                className="mt-4 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
+              >
+                + New Formula
+              </button>
+            )}
           </div>
         ) : (
           <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">

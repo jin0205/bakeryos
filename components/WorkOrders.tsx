@@ -115,7 +115,16 @@ const WorkOrders: React.FC = () => {
         {filtered.length === 0 ? (
           <div className="p-12 text-center text-stone-400 dark:text-stone-500">
             <p className="text-sm">No work orders found.</p>
-            <p className="text-xs mt-1">Create one from the Batch Builder.</p>
+            {filter === 'all' ? (
+              <button
+                onClick={() => { window.location.hash = '#/production/batch-builder'; }}
+                className="mt-4 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
+              >
+                Open Batch Builder
+              </button>
+            ) : (
+              <p className="text-xs mt-1">No {filter} orders.</p>
+            )}
           </div>
         ) : (
           <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">

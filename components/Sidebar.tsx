@@ -1,5 +1,6 @@
 import React from 'react';
 import { ClipboardIcon } from './icons/ClipboardIcon';
+import { ProductionIcon } from './icons/ProductionIcon';
 import { BoxIcon } from './icons/BoxIcon';
 import { CalculatorIcon } from './icons/CalculatorIcon';
 import { LabIcon } from './icons/LabIcon';
@@ -31,7 +32,7 @@ const DDTIcon: React.ComponentType<{ className?: string }> = ({ className }) => 
 
 const mainNavItems: { id: Tab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'formulas',    label: 'Formula Library', Icon: ClipboardIcon },
-  { id: 'production',  label: 'Production',      Icon: ClipboardIcon },
+  { id: 'production',  label: 'Production',      Icon: ProductionIcon },
   { id: 'inventory',   label: 'Inventory',        Icon: BoxIcon },
   { id: 'cost',        label: 'Cost & Margin',    Icon: CalculatorIcon },
   { id: 'lab',         label: 'R&D Lab',          Icon: LabIcon },
@@ -67,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-grow overflow-y-auto p-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto min-h-0 p-3 space-y-1">
         {mainNavItems.map(({ id, label, Icon }) => (
           <button
             key={id}

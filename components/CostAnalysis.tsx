@@ -86,7 +86,7 @@ const CostAnalysis: React.FC = () => {
   return (
     <div className="animate-fade-in">
         <div className="mb-6">
-            <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">OPERATIONS / Cost &amp; Margin</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">COST &amp; MARGIN</p>
             <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Cost &amp; Margin</h1>
         </div>
 
@@ -103,8 +103,14 @@ const CostAnalysis: React.FC = () => {
                 <tbody className="bg-white dark:bg-transparent divide-y divide-stone-200 dark:divide-stone-800/40">
                     {analysis.length === 0 ? (
                         <tr>
-                            <td colSpan={4} className="px-6 py-8 text-center text-stone-500 dark:text-stone-400 transition-colors">
-                                No recipes found. Create recipes in the Recipe Management tab.
+                            <td colSpan={4} className="px-6 py-12 text-center transition-colors">
+                                <p className="text-sm text-stone-500 dark:text-stone-400">No formulas found.</p>
+                                <button
+                                    onClick={() => { window.location.hash = '#/formulas'; }}
+                                    className="mt-4 px-4 py-2 bg-amber-600 text-white text-sm font-semibold rounded-lg hover:bg-amber-700 transition-colors cursor-pointer"
+                                >
+                                    Go to Formula Library
+                                </button>
                             </td>
                         </tr>
                     ) : (
