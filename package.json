@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:worker": "wrangler dev",
+    "dev:worker": "mkdir -p dist && wrangler dev",
     "build": "vite build",
     "deploy": "vite build && wrangler deploy",
     "preview": "vite preview",
