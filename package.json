@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:worker": "mkdir -p dist && wrangler dev",
+    "dev:worker": "node scripts/dev-worker.mjs",
     "build": "vite build",
     "deploy": "vite build && wrangler deploy",
     "preview": "vite preview",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260412.1",
+    "commander": "^14.0.3",
     "@playwright/test": "^1.59.1",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
