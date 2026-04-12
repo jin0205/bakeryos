@@ -1,15 +1,33 @@
-import Anthropic from '@anthropic-ai/sdk';
+/**
+ * BakeryOS — Claude AI service
+ *
+ * All requests are proxied through the Cloudflare Worker at /api/messages.
+ * The ANTHROPIC_API_KEY is stored as a Cloudflare secret and is never
+ * included in the client bundle.
+ */
 
-if (!process.env.ANTHROPIC_API_KEY) {
-  throw new Error("ANTHROPIC_API_KEY environment variable is not set.");
+// ---------------------------------------------------------------------------
+// Internal types
+// ---------------------------------------------------------------------------
+
+interface ContentBlock {
+  type: string;
+  text?: string;
 }
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+interface AnthropicResponse {
+  content: ContentBlock[];
+}
 
-// SHARED NORMALIZATION PROMPT FRAGMENT
+type MessageParam = {
+  role: 'user' | 'assistant';
+  content: string | unknown[];
+};
+
+// ---------------------------------------------------------------------------
+// Shared normalization prompt fragment (weights must be in grams)
+// ---------------------------------------------------------------------------
+
 const NORMALIZATION_INSTRUCTIONS = `
 ### CRITICAL: UNIT NORMALIZATION HEURISTICS:
 The app requires all weights in **GRAMS (g)**. Use the following conversion logic for less structured or non-metric text:
@@ -42,6 +60,27 @@ If an ingredient is given in cups, spoons, or milliliters, use these specific de
 - If only Baker's Percentages are provided, assume a Total Flour Weight of 1000g.
 `;
 
+// ---------------------------------------------------------------------------
+// Core proxy helper
+// ---------------------------------------------------------------------------
+
+async function callClaude(params: Record<string, unknown>): Promise<AnthropicResponse> {
+  const res = await fetch('/api/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  });
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Claude API error ${res.status}: ${errorText}`);
+  }
+  return res.json() as Promise<AnthropicResponse>;
+}
+
+function extractText(response: AnthropicResponse): string {
+  return response.content.find(b => b.type === 'text')?.text ?? '';
+}
+
 async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve) => {
     const reader = new FileReader();
@@ -50,16 +89,15 @@ async function fileToBase64(file: File): Promise<string> {
   });
 }
 
-function extractText(response: Anthropic.Message): string {
-  const block = response.content.find(b => b.type === 'text');
-  return block?.type === 'text' ? block.text : '';
-}
+// ---------------------------------------------------------------------------
+// Exported functions
+// ---------------------------------------------------------------------------
 
 export const analyzeImage = async (imageFile: File, prompt: string): Promise<string> => {
   try {
     const base64 = await fileToBase64(imageFile);
     const mediaType = imageFile.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       messages: [{
@@ -96,7 +134,7 @@ Extract the recipe details from this PDF.
 ${NORMALIZATION_INSTRUCTIONS}
 Return ONLY valid JSON.
 `;
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{
@@ -137,7 +175,7 @@ OUTPUT FORMAT:
 ${NORMALIZATION_INSTRUCTIONS}
 Return ONLY valid JSON.
 `;
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
@@ -151,7 +189,7 @@ Return ONLY valid JSON.
 
 export const getGroundedResponse = async (prompt: string): Promise<{ text: string; metadata?: { groundingChunks: [] } }> => {
   try {
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
@@ -168,7 +206,7 @@ export const getGroundedResponse = async (prompt: string): Promise<{ text: strin
 
 export const getComplexResponse = async (prompt: string): Promise<string> => {
   try {
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 16000,
       thinking: { type: 'enabled', budget_tokens: 10000 },
@@ -195,7 +233,7 @@ Based on the goal, suggest specific modifications to the ingredient percentages,
 Provide the reasoning (baking science) for each suggestion.
 Format the response in Markdown.
 `;
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
@@ -214,11 +252,11 @@ export async function getChatResponse(
   systemInstruction: string
 ): Promise<string> {
   try {
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-sonnet-4-6',
       max_tokens: 2048,
       system: systemInstruction,
-      messages: history,
+      messages: history as MessageParam[],
     });
     return extractText(response) || "No response generated.";
   } catch (error) {
@@ -286,7 +324,7 @@ Where each weight = (percentage / 100) * ${totalFlourWeight}
 `;
 
   try {
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }],
@@ -316,7 +354,7 @@ Return ONLY a single numeric value representing the price in USD/kg.
 Do not include symbols ($), text, or markdown. Just the number (e.g., 2.50).
 If no price can be confidently estimated, return 0.
 `;
-    const response = await client.messages.create({
+    const response = await callClaude({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 64,
       messages: [{ role: 'user', content: prompt }],
