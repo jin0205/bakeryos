@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Analytics } from '@vercel/analytics/react';
 import Sidebar from './components/Sidebar';
 import RecipeManagement from './components/RecipeManagement';
 import BakingLab, { LabTab } from './components/BakingLab';
@@ -16,7 +15,7 @@ export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
 
 const VALID_TABS: Tab[] = ['formulas', 'production', 'inventory', 'cost', 'lab'];
 const VALID_PRODUCTION_TABS: ProductionTab[] = ['work-orders', 'schedule', 'batch-builder'];
-const VALID_LAB_TABS: LabTab[] = ['assistant', 'brainstorm', 'fermentation', 'ddt', 'pdf', 'converter'];
+const VALID_LAB_TABS: LabTab[] = ['assistant', 'calculators'];
 
 function parseHash(): { tab: Tab; productionTab: ProductionTab; labTab: LabTab } {
   const hash = window.location.hash.replace(/^#\/?/, '');
@@ -174,7 +173,6 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </main>
-      <Analytics />
     </div>
   );
 };
