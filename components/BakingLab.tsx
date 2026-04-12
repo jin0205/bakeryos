@@ -1,13 +1,11 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import AiBakersChat from './AiBakersChat';
-import FermentationEngine from './FermentationEngine';
-import RecipeImporter from './RecipeImporter';
+import RecipeBrainstormer from './RecipeBrainstormer';
 import MeasurementConverter from './MeasurementConverter';
 import DDTCalculator from './DDTCalculator';
-import RecipeBrainstormer from './RecipeBrainstormer';
 
-export type LabTab = 'assistant' | 'fermentation' | 'pdf' | 'converter' | 'ddt' | 'brainstorm';
+export type LabTab = 'assistant' | 'calculators';
 
 interface BakingLabProps {
   activeLabTab: LabTab;
@@ -15,15 +13,14 @@ interface BakingLabProps {
 }
 
 const LAB_TAB_LABELS: Record<LabTab, string> = {
-  assistant:    "Baker's Assistant",
-  brainstorm:   'Recipe Brainstormer',
-  fermentation: 'Fermentation Engine',
-  ddt:          'DDT Water Temp',
-  pdf:          'Recipe Importer',
-  converter:    'Converter',
+  assistant:   'AI Assistant',
+  calculators: 'Calculators',
 };
 
 const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab, onNavigateToLibrary }) => {
+  const [assistantMode, setAssistantMode] = useState<'chat' | 'brainstorm'>('chat');
+  const [calcMode, setCalcMode] = useState<'ddt' | 'converter'>('ddt');
+
   return (
     <div className="animate-fade-in">
       <div className="mb-4">
@@ -33,23 +30,60 @@ const BakingLab: React.FC<BakingLabProps> = ({ activeLabTab, onNavigateToLibrary
       </div>
       <div className="bg-white dark:bg-stone-900/40 rounded-xl shadow-sm border border-stone-200 dark:border-stone-800/60 p-6 min-h-[600px] transition-colors duration-300">
         {activeLabTab === 'assistant' && (
-          <div className="animate-fade-in h-full"><AiBakersChat /></div>
-        )}
-        {activeLabTab === 'fermentation' && (
-          <div className="animate-fade-in"><FermentationEngine /></div>
-        )}
-        {activeLabTab === 'ddt' && (
-          <div className="animate-fade-in"><DDTCalculator /></div>
-        )}
-        {activeLabTab === 'pdf' && (
-          <div className="animate-fade-in"><RecipeImporter /></div>
-        )}
-        {activeLabTab === 'converter' && (
-          <div className="animate-fade-in"><MeasurementConverter /></div>
-        )}
-        {activeLabTab === 'brainstorm' && (
           <div className="animate-fade-in">
-            <RecipeBrainstormer onNavigateToLibrary={onNavigateToLibrary} />
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setAssistantMode('chat')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  assistantMode === 'chat'
+                    ? 'bg-amber-600 text-white'
+                    : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                Baker's Assistant
+              </button>
+              <button
+                onClick={() => setAssistantMode('brainstorm')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  assistantMode === 'brainstorm'
+                    ? 'bg-amber-600 text-white'
+                    : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                Recipe Brainstormer
+              </button>
+            </div>
+            {assistantMode === 'chat'
+              ? <AiBakersChat />
+              : <RecipeBrainstormer onNavigateToLibrary={onNavigateToLibrary} />
+            }
+          </div>
+        )}
+        {activeLabTab === 'calculators' && (
+          <div className="animate-fade-in">
+            <div className="flex gap-2 mb-6">
+              <button
+                onClick={() => setCalcMode('ddt')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  calcMode === 'ddt'
+                    ? 'bg-amber-600 text-white'
+                    : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                DDT Water Temp
+              </button>
+              <button
+                onClick={() => setCalcMode('converter')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  calcMode === 'converter'
+                    ? 'bg-amber-600 text-white'
+                    : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                Converter
+              </button>
+            </div>
+            {calcMode === 'ddt' ? <DDTCalculator /> : <MeasurementConverter />}
           </div>
         )}
       </div>

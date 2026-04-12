@@ -1,23 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import RecipeCalculator from './RecipeCalculator';
 import RecipeLibrary from './RecipeLibrary';
+import RecipeImporter from './RecipeImporter';
 import { SavedRecipe } from '../types';
 
-type ViewMode = 'library' | 'workbench';
+type ViewMode = 'library' | 'workbench' | 'importer';
 
 const RecipeManagement: React.FC = () => {
     const [view, setView] = useState<ViewMode>('library');
     const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
     const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
 
-    // Load recipes on mount and when view changes to library (to catch updates)
     useEffect(() => {
         const loadRecipes = () => {
             const saved = localStorage.getItem('sourdough_recipes');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    // Ensure legacy data has required fields
                     const migrated = parsed.map((r: any) => ({
                         ...r,
                         version: r.version || 1,
@@ -55,30 +54,60 @@ const RecipeManagement: React.FC = () => {
         setView('library');
     };
 
+    const breadcrumb = view === 'library' ? 'FORMULA LIBRARY'
+        : view === 'workbench' ? 'FORMULAS / Formula Workbench'
+        : 'FORMULAS / Import Recipe';
+
+    const heading = view === 'library' ? 'Formula Library'
+        : view === 'workbench' ? 'Formula Workbench'
+        : 'Import Recipe';
+
     return (
         <div className="space-y-6">
             <div className="mb-6">
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">
-                    {view === 'library' ? 'FORMULA LIBRARY' : 'FORMULAS / Formula Workbench'}
+                    {breadcrumb}
                 </p>
-                <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
-                    {view === 'library' ? 'Formula Library' : 'Formula Workbench'}
-                </h1>
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                        {heading}
+                    </h1>
+                    {view === 'library' && (
+                        <button
+                            onClick={() => setView('importer')}
+                            className="px-4 py-2 text-stone-600 dark:text-stone-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors text-sm font-medium border border-stone-200 dark:border-stone-700"
+                        >
+                            Import Recipe
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {view === 'library' ? (
-                <RecipeLibrary 
+            {view === 'library' && (
+                <RecipeLibrary
                     recipes={savedRecipes}
                     onEdit={handleEditRecipe}
                     onCreate={handleCreateRecipe}
                     onDelete={handleDeleteRecipe}
                 />
-            ) : (
+            )}
+            {view === 'workbench' && (
                 <div className="animate-fade-in">
-                    <RecipeCalculator 
+                    <RecipeCalculator
                         initialRecipe={activeRecipe}
                         onBack={handleBackToLibrary}
                     />
+                </div>
+            )}
+            {view === 'importer' && (
+                <div className="animate-fade-in">
+                    <button
+                        onClick={handleBackToLibrary}
+                        className="mb-4 px-4 py-2 text-stone-600 dark:text-stone-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors text-sm"
+                    >
+                        ← Back to Library
+                    </button>
+                    <RecipeImporter />
                 </div>
             )}
         </div>
