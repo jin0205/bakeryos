@@ -1,10 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sourdough-pro-ai",
+  // Worker entry point — handles /api/* routes and delegates everything else to ASSETS
+  "main": "worker.ts",
   "compatibility_date": "2026-04-10",
   "observability": {
     "enabled": true
   },
+  // Serves the Vite build output as a static SPA.
+  // Requests that don't match a file fall back to index.html.
   "assets": {
     "directory": "./dist",
     "not_found_handling": "single-page-application"
@@ -12,4 +16,6 @@
   "compatibility_flags": [
     "nodejs_compat"
   ]
+  // Secrets (never committed here — set via `wrangler secret put`):
+  //   ANTHROPIC_API_KEY
 }
