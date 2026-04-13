@@ -1,22 +1,49 @@
+---
+description: 
+alwaysApply: true
+---
+
 # BakeryOS — Claude Project Memory
 
+## Quick Start
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...   # required — app throws at load without it
+npm install
+npm run dev        # Vite dev server on port 3000
+npm run build      # production build
+```
+
+**E2E tests** (`e2e/` dir, Chromium):
+```bash
+npm test                  # headless
+npm run test:headed       # visible browser
+npm run test:ui           # Playwright UI mode
+npm run test:report       # view last HTML report
+```
+
+> **Note:** Playwright auto-starts the dev server on port 3001 via `webServer` in `playwright.config.ts`. No manual server needed for `npm test`.
+
 ## What This Is
-BakeryOS is a sourdough/artisan bakery ERP web app for commercial baker Kevin. It manages formulas (recipes), production scheduling, inventory, cost analysis, and R&D. AI features use Google Gemini.
+BakeryOS is a sourdough/artisan bakery ERP web app for commercial baker Kevin. It manages formulas (recipes), production scheduling, inventory, cost analysis, and R&D. AI features use Anthropic Claude.
 
 ## Tech Stack
+- **Primary languages:** TypeScript (frontend), Markdown (docs)
+- **AI service:** Anthropic Claude — frontend calls `/api/messages` via `fetch`; the Cloudflare Worker (`worker.ts`) holds the `@anthropic-ai/sdk` dependency. No Anthropic imports belong in frontend files.
 - **React 19** + **TypeScript 5.8** + **Vite 6**
 - **Tailwind CSS** — dark mode via `dark:` prefix; amber/stone color palette
-- **Google Gemini** (`@google/genai`) — all AI calls in `services/geminiService.ts`
+- **Anthropic Claude** — all AI calls in `services/claudeService.ts` via `fetch` to `/api/messages`
+- **Cloudflare Workers** — `worker.ts` proxies `/api/messages` → Anthropic; `ANTHROPIC_API_KEY` stored as a Cloudflare secret
 - **localStorage** — all data persistence (no backend, no database)
-- No test suite
+- **Playwright** — E2E tests in `e2e/` (navigation, formula library, dark mode)
 
 ## Project Structure
 ```
+App.tsx              # Root: tab routing, dark mode state, top-level layout
 components/          # All UI — one file per feature, React.FC pattern
   Sidebar.tsx        # Nav: registers all top-level tabs + sub-tabs
-  App.tsx (root)     # Tab routing, dark mode state, top-level layout
 services/
-  geminiService.ts   # All Gemini API calls, prompt templates
+  claudeService.ts   # All Claude API calls, prompt templates
 types.ts             # Shared TypeScript types (Recipe, WorkOrder, etc.)
 ```
 
@@ -48,16 +75,57 @@ types.ts             # Shared TypeScript types (Recipe, WorkOrder, etc.)
 
 Use skill: `/new-component MyFeature my-feature "My Feature Label"`
 
-## Gemini Prompt Conventions
-- All weights must be in **grams** — include `NORMALIZATION_INSTRUCTIONS` from `geminiService.ts`
+## AI Prompt Conventions
+- All weights must be in **grams** — include `NORMALIZATION_INSTRUCTIONS` from `claudeService.ts`
 - Use Baker's Percentages (flour = 100%, default 1000g total flour if only % given)
 - Structured JSON output preferred — no markdown fences in response
-- Vision tasks: `gemini-2.0-flash-preview`; text tasks: `gemini-2.0-flash`
-- Streaming for chat (`AiBakersChat`), non-streaming for single-shot analysis
+- Vision/text tasks: `claude-sonnet-4-6`; fast/cheap tasks: `claude-haiku-4-5-20251001`
+- Streaming for chat, non-streaming for single-shot analysis
 
 ## Available Skills
 - `/new-component <Name> <tab-id> <Label>` — scaffold a new bakery component with correct patterns
-- `gemini-prompt` — Claude-invoked background knowledge for AI features (not user-invocable)
+- `gemini-prompt` — Claude-invoked background knowledge for AI prompt patterns (not user-invocable)
+- `bakery-types` — Claude-invoked background knowledge for shared TypeScript types and localStorage schema (not user-invocable)
+- `bakery-domain` — Claude-invoked background knowledge for baking science and math: baker's percentages, hydration, DDT, bake loss, scaling, levain ratios (not user-invocable)
+
+## Deployment
+- This project deploys to **Cloudflare Workers**, NOT Vercel
+- Do not add Vercel-specific dependencies or configuration
+- Static SPA with Cloudflare Workers for API proxy
+
+> **This project deploys to Cloudflare Workers, NOT Vercel.** Do not add Vercel-specific dependencies or configuration. The app is a static SPA with a Cloudflare Workers API proxy.
+
+Deploys to **Cloudflare Workers** (static SPA + API proxy in one Worker):
+
+```bash
+# One-time: store the API key as a Cloudflare secret
+wrangler secret put ANTHROPIC_API_KEY
+
+# Deploy
+npm run deploy   # vite build && wrangler deploy
+```
+
+Local dev requires two terminals:
+```bash
+npm run dev          # Vite on :3000
+npm run dev:worker   # Wrangler on :8787
+```
+
+## AI Service
+- AI backend uses **Anthropic Claude SDK** (not Google Gemini)
+- Environment variable: `ANTHROPIC_API_KEY` in `.env.local`
+- Do not reference or add `@google/genai` dependencies
+
+## Development Workflow
+- Always run `npm run dev` after making dependency or environment variable changes to verify the app loads without blank pages or missing module errors.
+- Always verify `.env.local` exists with required API keys before starting dev server
+- Check that all dependencies are installed (`npm install`) before launching
+
+## Git & Dependencies
+- Before `git pull`, always check for unstaged changes and commit or stash them first
+- When resolving merge conflicts or dependency issues, always revert to a clean state (HEAD) first rather than trying to merge both versions.
+- When resolving merge conflicts in `package.json`, prefer HEAD versions and regenerate lockfile
+- Regenerate lockfiles after any dependency changes (`npm install`).
 
 ## Available Agents
 - `ui-reviewer` — reviews components for dark mode coverage, Tailwind consistency, and accessibility
