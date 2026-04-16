@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { InventoryItem, PlannerItem, UnitOfMeasure } from '../types';
+import { PanelPayload } from '../App';
 import { CalculatorIcon } from './icons/CalculatorIcon';
 import { BoxIcon } from './icons/BoxIcon';
 
@@ -27,7 +28,11 @@ const XIcon: React.FC<{ className?: string }> = ({ className }) => (
   </svg>
 );
 
-const InventoryManagement: React.FC = () => {
+interface InventoryManagementProps {
+  onOpenPanel?: (p: PanelPayload) => void;
+}
+
+const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }) => {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [plannerItems, setPlannerItems] = useState<PlannerItem[]>([]);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -403,9 +408,15 @@ const InventoryManagement: React.FC = () => {
                   return (
                     <tr
                       key={item.id}
+                      onClick={item.isInventory && onOpenPanel ? () => {
+                        const { isInventory, ...inventoryItem } = item;
+                        onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem });
+                      } : undefined}
+                      tabIndex={item.isInventory && onOpenPanel ? 0 : undefined}
+                      onKeyDown={item.isInventory && onOpenPanel ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const { isInventory, ...inventoryItem } = item; onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem }); } } : undefined}
                       className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${
                         isEven ? 'bg-white dark:bg-stone-800' : 'bg-stone-50/50 dark:bg-stone-900/20'
-                      }`}
+                      } ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
                     >
                       {/* Ingredient + badge */}
                       <td className="py-4 px-6">
@@ -447,7 +458,7 @@ const InventoryManagement: React.FC = () => {
 
                       {/* Allocated */}
                       <td className="py-4 px-6 text-right">
-                        <span className={`font-mono font-semibold ${req > 0 ? 'text-amber-600' : 'text-stone-300 dark:text-stone-600'}`}>
+                        <span className={`font-mono font-semibold ${req > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-stone-300 dark:text-stone-600'}`}>
                           {req > 0 ? `${(req / 1000).toFixed(2)} kg` : '—'}
                         </span>
                       </td>
@@ -472,7 +483,7 @@ const InventoryManagement: React.FC = () => {
                       <td className="py-4 px-6 text-right">
                         {item.isInventory && (
                           deleteConfirmId === item.id ? (
-                            <div role="status" aria-live="polite" className="flex items-center justify-end gap-1.5">
+                            <div role="group" aria-label="Confirm delete" className="flex items-center justify-end gap-1.5">
                               <span className="text-[10px] text-stone-500 dark:text-stone-400">Remove?</span>
                               <button
                                 onClick={() => confirmDelete(item.id)}

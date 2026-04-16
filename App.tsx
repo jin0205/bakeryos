@@ -8,19 +8,30 @@ import InventoryManagement from './components/InventoryManagement';
 import CostAnalysis from './components/CostAnalysis';
 import WorkOrders from './components/WorkOrders';
 import ProductionSchedule from './components/ProductionSchedule';
-import { PlannerItem, WorkOrder, WorkOrderLineItem } from './types';
+import Dashboard from './components/Dashboard';
+import ContextPanel from './components/ContextPanel';
+import { PlannerItem, WorkOrder, WorkOrderLineItem, SavedRecipe, InventoryItem } from './types';
 
-type Tab = 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
+type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
 
-const VALID_TABS: Tab[] = ['formulas', 'production', 'inventory', 'cost', 'lab'];
+export type PanelPayload =
+  | { type: 'formula';         data: SavedRecipe }
+  | { type: 'work-order';      data: WorkOrder }
+  | { type: 'inventory';       data: InventoryItem }
+  | { type: 'kpi-work-orders'; items: WorkOrder[] }
+  | { type: 'kpi-inventory';   items: InventoryItem[] }
+  | { type: 'kpi-formulas';    items: SavedRecipe[] }
+  | { type: 'kpi-batch';       items: PlannerItem[] };
+
+const VALID_TABS: Tab[] = ['home', 'formulas', 'production', 'inventory', 'cost', 'lab'];
 const VALID_PRODUCTION_TABS: ProductionTab[] = ['work-orders', 'schedule', 'batch-builder'];
 const VALID_LAB_TABS: LabTab[] = ['assistant', 'calculators'];
 
 function parseHash(): { tab: Tab; productionTab: ProductionTab; labTab: LabTab } {
   const hash = window.location.hash.replace(/^#\/?/, '');
   const [segment1, segment2] = hash.split('/') as [string, string];
-  const tab = VALID_TABS.includes(segment1 as Tab) ? (segment1 as Tab) : 'formulas';
+  const tab = VALID_TABS.includes(segment1 as Tab) ? (segment1 as Tab) : 'home';
   const productionTab = (tab === 'production' && VALID_PRODUCTION_TABS.includes(segment2 as ProductionTab))
     ? (segment2 as ProductionTab) : 'work-orders';
   const labTab = (tab === 'lab' && VALID_LAB_TABS.includes(segment2 as LabTab))
@@ -44,6 +55,10 @@ const App: React.FC = () => {
     if (saved) return saved === 'dark';
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+  const [panel, setPanel] = useState<PanelPayload | null>(null);
+
+  const openPanel  = (p: PanelPayload) => setPanel(p);
+  const closePanel = () => setPanel(null);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -141,18 +156,19 @@ const App: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'formulas':   return <RecipeManagement />;
+      case 'home':       return <Dashboard onOpenPanel={openPanel} onNavigate={handleSetActiveTab} />;
+      case 'formulas':   return <RecipeManagement onOpenPanel={openPanel} />;
       case 'production':
         switch (activeProductionTab) {
-          case 'work-orders':   return <WorkOrders />;
+          case 'work-orders':   return <WorkOrders onOpenPanel={openPanel} />;
           case 'schedule':      return <ProductionSchedule />;
           case 'batch-builder': return <BatchPlanner onCreateWorkOrder={handleCreateWorkOrder} />;
-          default:              return <WorkOrders />;
+          default:              return <WorkOrders onOpenPanel={openPanel} />;
         }
-      case 'inventory':  return <InventoryManagement />;
+      case 'inventory':  return <InventoryManagement onOpenPanel={openPanel} />;
       case 'cost':       return <CostAnalysis />;
       case 'lab':        return <BakingLab activeLabTab={activeLabTab} onNavigateToLibrary={() => handleSetActiveTab('formulas')} />;
-      default:           return <RecipeManagement />;
+      default:           return <Dashboard onOpenPanel={openPanel} onNavigate={handleSetActiveTab} />;
     }
   };
 
@@ -173,6 +189,7 @@ const App: React.FC = () => {
           {renderContent()}
         </div>
       </main>
+      <ContextPanel panel={panel} onClose={closePanel} />
     </div>
   );
 };

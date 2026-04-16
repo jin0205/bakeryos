@@ -3,15 +3,17 @@ import React, { useState, useMemo } from 'react';
 import { SavedRecipe, PlannerItem } from '../types';
 import { SearchIcon } from './icons/SearchIcon';
 import { ClipboardIcon } from './icons/ClipboardIcon';
+import { PanelPayload } from '../App';
 
 interface RecipeLibraryProps {
   recipes: SavedRecipe[];
   onEdit: (recipe: SavedRecipe) => void;
   onCreate: () => void;
   onDelete: (id: string) => void;
+  onOpenPanel?: (p: PanelPayload) => void;
 }
 
-const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate, onDelete }) => {
+const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate, onDelete, onOpenPanel }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'az'>('newest');
 
@@ -73,7 +75,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search formulas…"
-            className="block w-full pl-9 pr-8 py-2 text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
+            className="block w-full pl-9 pr-8 py-2 text-sm border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
           />
           {searchTerm && (
             <button
@@ -91,7 +93,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
           <select
             value={sortOrder}
             onChange={e => setSortOrder(e.target.value as any)}
-            className="text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 dark:text-stone-200 rounded-md px-3 py-2 focus:ring-amber-500 focus:outline-none cursor-pointer"
+            className="text-sm border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 dark:text-stone-200 rounded-md px-3 py-2 focus:ring-amber-500 focus:outline-none cursor-pointer"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -107,7 +109,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 shadow-sm overflow-hidden">
         {filteredAndSortedRecipes.length === 0 ? (
           <div className="py-16 text-center">
             <ClipboardIcon className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
@@ -139,7 +141,9 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
               {filteredAndSortedRecipes.map(recipe => (
                 <tr
                   key={recipe.id}
-                  onClick={() => onEdit(recipe)}
+                  onClick={() => onOpenPanel ? onOpenPanel({ type: 'formula', data: recipe }) : onEdit(recipe)}
+                  tabIndex={0}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenPanel ? onOpenPanel({ type: 'formula', data: recipe }) : onEdit(recipe); } }}
                   className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-100">
@@ -156,16 +160,25 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
                   <td className="px-4 py-3 text-center">
                     <div className="flex justify-center items-center gap-3">
                       <button
+                        onClick={e => { e.stopPropagation(); onEdit(recipe); }}
+                        aria-label="Edit formula"
+                        className="text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
                         onClick={e => handleAddToPlan(e, recipe)}
-                        title="Add to Batch Builder"
-                        className="text-stone-400 hover:text-amber-600 transition-colors"
+                        aria-label="Add to Batch Builder"
+                        className="text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
                       >
                         <ClipboardIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={e => { e.stopPropagation(); onDelete(recipe.id); }}
-                        title="Delete"
-                        className="text-stone-300 hover:text-red-500 transition-colors"
+                        aria-label={`Delete ${recipe.name}`}
+                        className="text-stone-300 hover:text-red-500 transition-colors cursor-pointer"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
