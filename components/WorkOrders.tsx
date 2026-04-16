@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { WorkOrder, WorkOrderStatus } from '../types';
+import { PanelPayload } from '../App';
 
 const STATUS_BADGE: Record<WorkOrderStatus, string> = {
   'draft':         'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400',
@@ -15,7 +16,11 @@ const STATUS_LABEL: Record<WorkOrderStatus, string> = {
   'complete': 'Complete',
 };
 
-const WorkOrders: React.FC = () => {
+interface WorkOrdersProps {
+  onOpenPanel?: (p: PanelPayload) => void;
+}
+
+const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [filter, setFilter] = useState<WorkOrderStatus | 'all'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -136,7 +141,7 @@ const WorkOrders: React.FC = () => {
                 <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Dough</th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Est. Cost</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wider">›</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wider">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200 dark:divide-stone-800/40">
@@ -164,8 +169,21 @@ const WorkOrders: React.FC = () => {
                         {STATUS_LABEL[wo.status]}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center text-stone-400">
-                      <span className={`text-lg transition-transform inline-block ${expandedId === wo.id ? 'rotate-90' : ''}`}>›</span>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {onOpenPanel && (
+                          <button
+                            onClick={e => { e.stopPropagation(); onOpenPanel({ type: 'work-order', data: wo }); }}
+                            title="View details"
+                            className="p-1 text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                        )}
+                        <span className={`text-lg text-stone-400 transition-transform inline-block ${expandedId === wo.id ? 'rotate-90' : ''}`}>›</span>
+                      </div>
                     </td>
                   </tr>
 

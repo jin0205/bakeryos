@@ -16,19 +16,21 @@ test.describe('Formula Library — empty state', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => localStorage.removeItem('sourdough_recipes'));
     await page.goto('/');
+    // Navigate to Formula Library (app now starts on Home/Dashboard)
+    await page.locator('aside').getByRole('button', { name: 'Formula Library' }).click();
   });
 
   test('shows empty state message when no formulas exist', async ({ page }) => {
-    // Empty state should prompt user to create their first formula
-    await expect(page.getByText(/no formulas|create your first|get started/i)).toBeVisible();
+    await expect(page.getByText(/your library is empty|no formulas|create your first|get started/i)).toBeVisible();
   });
 
   test('New Formula button is visible', async ({ page }) => {
-    await expect(page.getByRole('button', { name: /new formula/i })).toBeVisible();
+    // Use the toolbar button (first one in the toolbar)
+    await expect(page.getByRole('button', { name: '+ New Formula' }).first()).toBeVisible();
   });
 
   test('clicking New Formula opens the workbench', async ({ page }) => {
-    await page.getByRole('button', { name: /new formula/i }).click();
+    await page.getByRole('button', { name: '+ New Formula' }).first().click();
     await expect(page.getByRole('heading', { name: 'Formula Workbench' })).toBeVisible();
   });
 });
@@ -39,6 +41,8 @@ test.describe('Formula Library — with recipes', () => {
       localStorage.setItem('sourdough_recipes', JSON.stringify([recipe]));
     }, SAMPLE_RECIPE);
     await page.goto('/');
+    // Navigate to Formula Library (app now starts on Home/Dashboard)
+    await page.locator('aside').getByRole('button', { name: 'Formula Library' }).click();
   });
 
   test('displays saved recipe by name', async ({ page }) => {
@@ -49,14 +53,21 @@ test.describe('Formula Library — with recipes', () => {
     await expect(page.getByText(/v1/i)).toBeVisible();
   });
 
-  test('clicking a recipe opens the workbench', async ({ page }) => {
-    // Recipe rows are clickable - click the recipe name
+  test('clicking a recipe opens the context panel', async ({ page }) => {
+    // Recipe rows now open a context panel instead of navigating to workbench
     await page.getByText('Country Sourdough').click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(page.getByText('Formula Detail')).toBeVisible();
+  });
+
+  test('edit button opens the workbench', async ({ page }) => {
+    // Pencil/edit button in actions column opens workbench
+    await page.getByTitle('Edit formula').click();
     await expect(page.getByRole('heading', { name: 'Formula Workbench' })).toBeVisible();
   });
 
   test('back button returns to library from workbench', async ({ page }) => {
-    await page.getByText('Country Sourdough').click();
+    await page.getByTitle('Edit formula').click();
     await expect(page.getByRole('heading', { name: 'Formula Workbench' })).toBeVisible();
 
     await page.getByRole('button', { name: /back/i }).click();

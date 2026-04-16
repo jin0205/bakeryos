@@ -3,10 +3,15 @@ import RecipeCalculator from './RecipeCalculator';
 import RecipeLibrary from './RecipeLibrary';
 import RecipeImporter from './RecipeImporter';
 import { SavedRecipe } from '../types';
+import { PanelPayload } from '../App';
 
 type ViewMode = 'library' | 'workbench' | 'importer';
 
-const RecipeManagement: React.FC = () => {
+interface RecipeManagementProps {
+  onOpenPanel?: (p: PanelPayload) => void;
+}
+
+const RecipeManagement: React.FC<RecipeManagementProps> = ({ onOpenPanel }) => {
     const [view, setView] = useState<ViewMode>('library');
     const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
     const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
@@ -89,6 +94,7 @@ const RecipeManagement: React.FC = () => {
                     onEdit={handleEditRecipe}
                     onCreate={handleCreateRecipe}
                     onDelete={handleDeleteRecipe}
+                    onOpenPanel={onOpenPanel}
                 />
             )}
             {view === 'workbench' && (
