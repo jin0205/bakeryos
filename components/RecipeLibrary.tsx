@@ -75,7 +75,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search formulas…"
-            className="block w-full pl-9 pr-8 py-2 text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
+            className="block w-full pl-9 pr-8 py-2 text-sm border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 rounded-md focus:ring-2 focus:ring-amber-500 focus:outline-none dark:text-stone-100"
           />
           {searchTerm && (
             <button
@@ -93,7 +93,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
           <select
             value={sortOrder}
             onChange={e => setSortOrder(e.target.value as any)}
-            className="text-sm border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-900 dark:text-stone-200 rounded-md px-3 py-2 focus:ring-amber-500 focus:outline-none cursor-pointer"
+            className="text-sm border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 dark:text-stone-200 rounded-md px-3 py-2 focus:ring-amber-500 focus:outline-none cursor-pointer"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -109,7 +109,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 shadow-sm overflow-hidden">
         {filteredAndSortedRecipes.length === 0 ? (
           <div className="py-16 text-center">
             <ClipboardIcon className="mx-auto h-10 w-10 text-stone-300 dark:text-stone-700" />
@@ -142,6 +142,8 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
                 <tr
                   key={recipe.id}
                   onClick={() => onOpenPanel ? onOpenPanel({ type: 'formula', data: recipe }) : onEdit(recipe)}
+                  tabIndex={0}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenPanel ? onOpenPanel({ type: 'formula', data: recipe }) : onEdit(recipe); } }}
                   className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3 text-sm font-semibold text-stone-900 dark:text-stone-100">
@@ -159,7 +161,7 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
                     <div className="flex justify-center items-center gap-3">
                       <button
                         onClick={e => { e.stopPropagation(); onEdit(recipe); }}
-                        title="Edit formula"
+                        aria-label="Edit formula"
                         className="text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,14 +170,14 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
                       </button>
                       <button
                         onClick={e => handleAddToPlan(e, recipe)}
-                        title="Add to Batch Builder"
+                        aria-label="Add to Batch Builder"
                         className="text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
                       >
                         <ClipboardIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={e => { e.stopPropagation(); onDelete(recipe.id); }}
-                        title="Delete"
+                        aria-label={`Delete ${recipe.name}`}
                         className="text-stone-300 hover:text-red-500 transition-colors cursor-pointer"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

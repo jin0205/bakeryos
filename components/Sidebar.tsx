@@ -63,11 +63,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 overflow-y-auto min-h-0 p-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto min-h-0 p-3 space-y-1" aria-label="Main navigation">
         {mainNavItems.map(({ id, label, Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
+            aria-current={activeTab === id ? 'page' : undefined}
             className={`flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
               activeTab === id
                 ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'

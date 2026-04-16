@@ -5,7 +5,19 @@
   "main": "worker.ts",
   "compatibility_date": "2026-04-10",
   "observability": {
-    "enabled": true
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true,
+      "persist": true,
+      "head_sampling_rate": 1
+    }
   },
   // Serves the Vite build output as a static SPA.
   // Requests that don't match a file fall back to index.html.

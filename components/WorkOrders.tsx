@@ -84,16 +84,16 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
       <div className="mb-6">
         <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">PRODUCTION / Work Orders</p>
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">Work Orders</h1>
+          <h1 className="text-xl font-bold text-stone-900 dark:text-stone-50">Work Orders</h1>
         </div>
       </div>
 
       {/* KPI Strip */}
       <div className="grid grid-cols-4 gap-4 mb-6">
         {(['draft', 'scheduled', 'in-production', 'complete'] as WorkOrderStatus[]).map(status => (
-          <div key={status} className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 p-4 shadow-sm">
+          <div key={status} className="bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 p-4 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">{STATUS_LABEL[status]}</p>
-            <p className="text-2xl font-black text-stone-900 dark:text-stone-100">{counts[status]}</p>
+            <p className="text-2xl font-black text-stone-900 dark:text-stone-50">{counts[status]}</p>
           </div>
         ))}
       </div>
@@ -116,7 +116,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
       </div>
 
       {/* Table */}
-      <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 shadow-sm overflow-hidden">
         {filtered.length === 0 ? (
           <div className="p-12 text-center text-stone-400 dark:text-stone-500">
             <p className="text-sm">No work orders found.</p>
@@ -135,13 +135,13 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
           <table className="min-w-full divide-y divide-stone-200 dark:divide-stone-800/60">
             <thead className="bg-stone-50 dark:bg-stone-950/40">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">WO #</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Scheduled</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Formulas</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Dough</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">Est. Cost</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-stone-500 uppercase tracking-wider">Details</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">WO #</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Scheduled</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Formulas</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Dough</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Est. Cost</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Status</th>
+                <th className="px-4 py-3 text-center text-xs font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-200 dark:divide-stone-800/40">
@@ -150,6 +150,8 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                   <tr
                     className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer"
                     onClick={() => setExpandedId(expandedId === wo.id ? null : wo.id)}
+                    tabIndex={0}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedId(expandedId === wo.id ? null : wo.id); } }}
                   >
                     <td className="px-4 py-3 text-sm font-mono font-bold text-stone-900 dark:text-stone-100">{wo.id}</td>
                     <td className="px-4 py-3 text-sm text-stone-600 dark:text-stone-400">
@@ -174,7 +176,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                         {onOpenPanel && (
                           <button
                             onClick={e => { e.stopPropagation(); onOpenPanel({ type: 'work-order', data: wo }); }}
-                            title="View details"
+                            aria-label="View details"
                             className="p-1 text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,7 +199,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                             <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2">Line Items</p>
                             <table className="min-w-full text-sm">
                               <thead>
-                                <tr className="text-xs text-stone-500">
+                                <tr className="text-xs text-stone-500 dark:text-stone-400">
                                   <th className="text-left font-medium pb-1">Formula</th>
                                   <th className="text-right font-medium pb-1">Count</th>
                                   <th className="text-right font-medium pb-1">Weight/Unit</th>
@@ -262,7 +264,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                                 />
                                 <button
                                   onClick={() => updateStatus(wo.id, 'scheduled', scheduleDateInputs[wo.id] || null!)}
-                                  className="px-3 py-1.5 text-xs font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                  className="px-3 py-1.5 text-xs font-semibold bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
                                 >
                                   Schedule
                                 </button>

@@ -412,6 +412,8 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                         const { isInventory, ...inventoryItem } = item;
                         onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem });
                       } : undefined}
+                      tabIndex={item.isInventory && onOpenPanel ? 0 : undefined}
+                      onKeyDown={item.isInventory && onOpenPanel ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const { isInventory, ...inventoryItem } = item; onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem }); } } : undefined}
                       className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${
                         isEven ? 'bg-white dark:bg-stone-800' : 'bg-stone-50/50 dark:bg-stone-900/20'
                       } ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
@@ -456,7 +458,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
 
                       {/* Allocated */}
                       <td className="py-4 px-6 text-right">
-                        <span className={`font-mono font-semibold ${req > 0 ? 'text-amber-600' : 'text-stone-300 dark:text-stone-600'}`}>
+                        <span className={`font-mono font-semibold ${req > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-stone-300 dark:text-stone-600'}`}>
                           {req > 0 ? `${(req / 1000).toFixed(2)} kg` : '—'}
                         </span>
                       </td>
@@ -481,7 +483,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                       <td className="py-4 px-6 text-right">
                         {item.isInventory && (
                           deleteConfirmId === item.id ? (
-                            <div role="status" aria-live="polite" className="flex items-center justify-end gap-1.5">
+                            <div role="group" aria-label="Confirm delete" className="flex items-center justify-end gap-1.5">
                               <span className="text-[10px] text-stone-500 dark:text-stone-400">Remove?</span>
                               <button
                                 onClick={() => confirmDelete(item.id)}

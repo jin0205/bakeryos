@@ -74,7 +74,7 @@ const RecipeManagement: React.FC<RecipeManagementProps> = ({ onOpenPanel }) => {
                     {breadcrumb}
                 </p>
                 <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+                    <h1 className="text-xl font-bold text-stone-900 dark:text-stone-50">
                         {heading}
                     </h1>
                     {view === 'library' && (
