@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getChatResponse } from '../services/claudeService';
 import { SavedRecipe, InventoryItem, PlannerItem } from '../types';
+import { storageService } from '../services/storageService';
 import MarkdownRenderer from './MarkdownRenderer';
 import Spinner from './Spinner';
 
@@ -76,9 +77,9 @@ const AiBakersChat: React.FC = () => {
 
   useEffect(() => {
     try {
-      const recipes: SavedRecipe[] = JSON.parse(localStorage.getItem('sourdough_recipes') || '[]');
-      const inventory: InventoryItem[] = JSON.parse(localStorage.getItem('sourdough_inventory') || '[]');
-      const plannerItems: PlannerItem[] = JSON.parse(localStorage.getItem('sourdough_planner_items') || '[]');
+      const recipes = storageService.load<SavedRecipe>('bakeryos_recipes');
+      const inventory = storageService.load<InventoryItem>('bakeryos_inventory');
+      const plannerItems = storageService.load<PlannerItem>('bakeryos_planner_items');
 
       setSystemInstruction(buildSystemInstruction(recipes, inventory, plannerItems));
 

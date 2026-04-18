@@ -2,24 +2,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SavedRecipe, InventoryItem, Ingredient } from '../types';
 import { BoxIcon } from './icons/BoxIcon';
+import { storageService } from '../services/storageService';
 
 const CostAnalysis: React.FC = () => {
   const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
 
   useEffect(() => {
-    const recipesStr = localStorage.getItem('sourdough_recipes');
-    if (recipesStr) {
-        try {
-            const parsed = JSON.parse(recipesStr);
-            setSavedRecipes(parsed);
-        } catch (e) { console.error(e); }
-    }
-
-    const invStr = localStorage.getItem('sourdough_inventory');
-    if (invStr) {
-      try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
-    }
+    setSavedRecipes(storageService.load<SavedRecipe>('bakeryos_recipes'));
+    setInventory(storageService.load<InventoryItem>('bakeryos_inventory'));
   }, []);
 
   // Helper to resolve cost and source

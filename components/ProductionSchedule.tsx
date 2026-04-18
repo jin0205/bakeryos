@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { WorkOrder, WorkOrderStatus } from '../types';
+import { storageService } from '../services/storageService';
 
 const STATUS_BADGE: Record<WorkOrderStatus, string> = {
   'draft':         'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400',
@@ -76,20 +77,14 @@ const ProductionSchedule: React.FC = () => {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('bakeryos_work_orders');
-    if (stored) {
-      try {
-        setWorkOrders(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to load work orders', e);
-      }
-    }
+    const stored = storageService.load<WorkOrder>('bakeryos_work_orders');
+    setWorkOrders(stored);
   }, []);
 
   const handleUpdate = (updated: WorkOrder) => {
     const newList = workOrders.map(wo => wo.id === updated.id ? updated : wo);
     setWorkOrders(newList);
-    localStorage.setItem('bakeryos_work_orders', JSON.stringify(newList));
+    storageService.save('bakeryos_work_orders', newList);
   };
 
   const today = new Date().toISOString().split('T')[0];
