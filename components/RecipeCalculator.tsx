@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Ingredient, SavedRecipe, InventoryItem } from '../types';
 import { BoxIcon } from './icons/BoxIcon';
+import { storageService } from '../services/storageService';
 
 interface RecipeCalculatorProps {
     initialRecipe?: SavedRecipe | null;
@@ -22,10 +23,7 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
 
   // --- INITIALIZATION ---
   useEffect(() => {
-    const invStr = localStorage.getItem('sourdough_inventory');
-    if (invStr) {
-      try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
-    }
+    setInventory(storageService.load<InventoryItem>('bakeryos_inventory'));
 
     if (initialRecipe) {
       setCurrentRecipeId(initialRecipe.id);
@@ -124,16 +122,11 @@ const RecipeCalculator: React.FC<RecipeCalculatorProps> = ({ initialRecipe, onBa
           history: initialRecipe ? [initialRecipe, ...initialRecipe.history] : []
       };
 
-      const recipesStr = localStorage.getItem('sourdough_recipes');
-      let existing: SavedRecipe[] = [];
-      if (recipesStr) {
-        try { existing = JSON.parse(recipesStr); } catch (e) { console.error('Failed to load recipes', e); }
-      }
-      const updated = currentRecipeId 
+      const existing = storageService.load<SavedRecipe>('bakeryos_recipes');
+      const updated = currentRecipeId
         ? existing.map(r => r.id === currentRecipeId ? newRecipe : r)
         : [...existing, newRecipe];
-
-      localStorage.setItem('sourdough_recipes', JSON.stringify(updated));
+      storageService.save('bakeryos_recipes', updated);
       alert("Recipe saved successfully.");
       onBack();
   };

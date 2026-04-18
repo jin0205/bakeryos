@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { SavedRecipe, PlannerItem } from '../types';
+import { storageService } from '../services/storageService';
 import { SearchIcon } from './icons/SearchIcon';
 import { ClipboardIcon } from './icons/ClipboardIcon';
 import { PanelPayload } from '../App';
@@ -35,14 +36,13 @@ const RecipeLibrary: React.FC<RecipeLibraryProps> = ({ recipes, onEdit, onCreate
   const handleAddToPlan = (e: React.MouseEvent, recipe: SavedRecipe) => {
     e.stopPropagation();
     try {
-      const existingStr = localStorage.getItem('sourdough_planner_items');
-      const existing: PlannerItem[] = existingStr ? JSON.parse(existingStr) : [];
+      const existing = storageService.load<PlannerItem>('bakeryos_planner_items');
       const newItem: PlannerItem = {
         uniqueId: Date.now().toString() + Math.random().toString().slice(2, 5),
         recipe,
         count: recipe.numberOfLoaves,
       };
-      localStorage.setItem('sourdough_planner_items', JSON.stringify([...existing, newItem]));
+      storageService.save('bakeryos_planner_items', [...existing, newItem]);
       alert(`Added "${recipe.name}" to Batch Builder`);
     } catch (err) {
       console.error('Failed to add to planner', err);

@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { brainstormRecipe, BrainstormedRecipeJSON } from '../services/claudeService';
 import { SavedRecipe, Ingredient } from '../types';
+import { storageService } from '../services/storageService';
 
 interface RecipeBrainstormerProps {
   onNavigateToLibrary?: () => void;
@@ -93,12 +94,8 @@ const RecipeBrainstormer: React.FC<RecipeBrainstormerProps> = ({ onNavigateToLib
       history: [],
     };
 
-    const stored = localStorage.getItem('sourdough_recipes');
-    let existing: SavedRecipe[] = [];
-    if (stored) {
-      try { existing = JSON.parse(stored); } catch { /* ignore */ }
-    }
-    localStorage.setItem('sourdough_recipes', JSON.stringify([...existing, newRecipe]));
+    const existing = storageService.load<SavedRecipe>('bakeryos_recipes');
+    storageService.save('bakeryos_recipes', [...existing, newRecipe]);
     setSavedName(newRecipe.name);
     setUiState('idle');
     setEditableRecipe(null);
