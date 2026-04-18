@@ -116,10 +116,10 @@ function migrateOldKeys(): void {
       try {
         const data = JSON.parse(oldRaw);
         setEnvelope(newKey, Array.isArray(data) ? data : []);
+        localStorage.removeItem(oldKey);
       } catch {
-        // skip malformed data
+        // skip malformed data — leave old key intact
       }
-      localStorage.removeItem(oldKey);
     }
   }
 }
