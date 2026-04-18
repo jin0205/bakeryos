@@ -4,6 +4,9 @@
   // Worker entry point — handles /api/* routes and delegates everything else to ASSETS
   "main": "worker.ts",
   "compatibility_date": "2026-04-10",
+  "kv_namespaces": [
+    { "binding": "BAKERY_DATA", "id": "0e228ea8873845bea266cc68e3e5669f" }
+  ],
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1,
