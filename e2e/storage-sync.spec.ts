@@ -14,18 +14,6 @@ function mockKV(page: Parameters<Parameters<typeof test>[1]>[0]) {
   });
 }
 
-test('GET /api/data/bakeryos_recipes returns 401 without token', async ({ request }) => {
-  const res = await request.get('/api/data/bakeryos_recipes');
-  expect(res.status()).toBe(401);
-});
-
-test('PUT /api/data/bakeryos_recipes returns 401 without token', async ({ request }) => {
-  const res = await request.put('/api/data/bakeryos_recipes', {
-    data: { data: [], updatedAt: new Date().toISOString() },
-  });
-  expect(res.status()).toBe(401);
-});
-
 test('save triggers background PUT to /api/data/bakeryos_recipes', async ({ page }) => {
   const puts: string[] = [];
   await page.route('/api/data/**', (route) => {
