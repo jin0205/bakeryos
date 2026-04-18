@@ -1,4 +1,40 @@
 @import "tailwindcss";
 
-/* Enable class-based dark mode (toggled via .dark on <html>) */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Temporary compatibility: existing dark: classes now respond to AMOLED class */
+@custom-variant dark (&:where(.theme-amoled, .theme-amoled *));
+@custom-variant amoled (&:where(.theme-amoled, .theme-amoled *));
+
+/* Light theme semantic tokens */
+:root,
+:root.theme-light {
+  --bg-app: #fef3c7;
+  --bg-surface: #f5f0e1;
+  --bg-elevated: #ffffff;
+  --border-default: #e7d9bf;
+  --text-primary: #78350f;
+  --text-secondary: #92400e;
+  --text-muted: #a16207;
+  --accent-primary: #b5651d;
+  --accent-secondary: #c67b5c;
+  --state-success: #15803d;
+  --state-warning: #b45309;
+  --state-danger: #b91c1c;
+  --focus-ring: #d97706;
+}
+
+/* AMOLED theme semantic tokens */
+:root.theme-amoled {
+  --bg-app: #000000;
+  --bg-surface: #0a0a0a;
+  --bg-elevated: #111111;
+  --border-default: #1a1a1a;
+  --text-primary: #fafafa;
+  --text-secondary: #e5e5e5;
+  --text-muted: #a3a3a3;
+  --accent-primary: #d97706;
+  --accent-secondary: #f59e0b;
+  --state-success: #22c55e;
+  --state-warning: #f59e0b;
+  --state-danger: #ef4444;
+  --focus-ring: #f59e0b;
+}
