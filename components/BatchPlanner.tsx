@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { SavedRecipe, PlannerItem, InventoryItem, Ingredient } from '../types';
+import { storageService } from '../services/storageService';
 
 interface BatchPlannerProps {
   onCreateWorkOrder?: (items: PlannerItem[], scheduledDate: string, status: 'draft' | 'scheduled') => void;
@@ -19,66 +20,39 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [woStatus, setWoStatus] = useState<'draft' | 'scheduled'>('scheduled');
 
+  const isInitialMount = useRef(true);
+
   // Load saved recipes, persisted plan, and inventory
   useEffect(() => {
-    const recipesStr = localStorage.getItem('sourdough_recipes');
-    let currentRecipes: SavedRecipe[] = [];
-    if (recipesStr) {
-      try {
-        currentRecipes = JSON.parse(recipesStr);
-        setSavedRecipes(currentRecipes);
-      } catch (e) {
-        console.error('Failed to load recipes', e);
-      }
-    }
+    const currentRecipes = storageService.load<SavedRecipe>('bakeryos_recipes');
+    setSavedRecipes(currentRecipes);
 
-    const planStr = localStorage.getItem('sourdough_planner_items');
-    let currentPlan: PlannerItem[] = [];
-    if (planStr) {
-      try {
-        currentPlan = JSON.parse(planStr);
-      } catch (e) {
-        console.error('Failed to load plan', e);
-      }
-    }
-
+    const currentPlan = storageService.load<PlannerItem>('bakeryos_planner_items');
+    const recipeMap = new Map(currentRecipes.map(r => [r.id, r]));
     const validPlannerItems: PlannerItem[] = [];
     let hasChanges = false;
-    const recipeMap = new Map(currentRecipes.map(r => [r.id, r]));
 
     currentPlan.forEach(item => {
-        const freshRecipe = recipeMap.get(item.recipe.id);
-        if (!freshRecipe) {
-             hasChanges = true;
-             return;
-        }
-
-        if (freshRecipe.version !== item.recipe.version) {
-             validPlannerItems.push({ ...item, recipe: freshRecipe });
-             hasChanges = true;
-        } else {
-             validPlannerItems.push(item);
-        }
+      const freshRecipe = recipeMap.get(item.recipe.id);
+      if (!freshRecipe) { hasChanges = true; return; }
+      if (freshRecipe.version !== item.recipe.version) {
+        validPlannerItems.push({ ...item, recipe: freshRecipe });
+        hasChanges = true;
+      } else {
+        validPlannerItems.push(item);
+      }
     });
 
     setPlannerItems(validPlannerItems);
-    if (hasChanges) {
-        localStorage.setItem('sourdough_planner_items', JSON.stringify(validPlannerItems));
-    }
+    if (hasChanges) storageService.save('bakeryos_planner_items', validPlannerItems);
 
-    const invStr = localStorage.getItem('sourdough_inventory');
-    if (invStr) {
-        try {
-            setInventory(JSON.parse(invStr));
-        } catch (e) {
-            console.error('Failed to load inventory', e);
-        }
-    }
+    setInventory(storageService.load<InventoryItem>('bakeryos_inventory'));
   }, []);
 
   // Persist plan changes
   useEffect(() => {
-    localStorage.setItem('sourdough_planner_items', JSON.stringify(plannerItems));
+    if (isInitialMount.current) { isInitialMount.current = false; return; }
+    storageService.save('bakeryos_planner_items', plannerItems);
   }, [plannerItems]);
 
   const addToPlan = (recipe: SavedRecipe) => {
@@ -184,10 +158,10 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
       });
 
       setInventory(updatedInventory);
-      localStorage.setItem('sourdough_inventory', JSON.stringify(updatedInventory));
-      
+      storageService.save('bakeryos_inventory', updatedInventory);
+
       setPlannerItems([]);
-      localStorage.setItem('sourdough_planner_items', JSON.stringify([]));
+      storageService.save('bakeryos_planner_items', []);
 
       alert(`Bake committed successfully! Stock adjusted.${missingItems.length > 0 ? '\n\nNote: The following items were used but were not found in inventory: ' + missingItems.join(', ') : ''}`);
   };
