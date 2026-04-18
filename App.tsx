@@ -11,6 +11,8 @@ import ProductionSchedule from './components/ProductionSchedule';
 import Dashboard from './components/Dashboard';
 import ContextPanel from './components/ContextPanel';
 import { PlannerItem, WorkOrder, WorkOrderLineItem, SavedRecipe, InventoryItem } from './types';
+import { storageService } from './services/storageService';
+import Spinner from './components/Spinner';
 
 type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
@@ -57,6 +59,14 @@ const App: React.FC = () => {
   });
   const [panel, setPanel] = useState<PanelPayload | null>(null);
 
+  const hasLocalData = (['bakeryos_recipes', 'bakeryos_inventory', 'bakeryos_planner_items', 'bakeryos_work_orders'] as const)
+    .some(k => localStorage.getItem(k) !== null);
+  const [syncing, setSyncing] = useState(!hasLocalData);
+
+  useEffect(() => {
+    storageService.syncAll().finally(() => setSyncing(false));
+  }, []);
+
   const openPanel  = (p: PanelPayload) => setPanel(p);
   const closePanel = () => setPanel(null);
 
@@ -97,11 +107,7 @@ const App: React.FC = () => {
   };
 
   const handleCreateWorkOrder = (items: PlannerItem[], scheduledDate: string, status: 'draft' | 'scheduled') => {
-    const stored = localStorage.getItem('bakeryos_work_orders');
-    let existing: WorkOrder[] = [];
-    if (stored) {
-      try { existing = JSON.parse(stored); } catch (e) { console.error(e); }
-    }
+    const existing = storageService.load<WorkOrder>('bakeryos_work_orders');
 
     const woNumber = Math.max(...existing.map(w => w.woNumber), 0) + 1;
     const year = new Date().getFullYear();
@@ -148,8 +154,7 @@ const App: React.FC = () => {
       notes: '',
     };
 
-    const updated = [...existing, newWO];
-    localStorage.setItem('bakeryos_work_orders', JSON.stringify(updated));
+    storageService.save('bakeryos_work_orders', [...existing, newWO]);
     setActiveTab('production');
     setActiveProductionTab('work-orders');
   };
@@ -171,6 +176,17 @@ const App: React.FC = () => {
       default:           return <Dashboard onOpenPanel={openPanel} onNavigate={handleSetActiveTab} />;
     }
   };
+
+  if (syncing) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-stone-100 dark:bg-stone-950">
+        <div className="flex flex-col items-center gap-3 text-stone-500 dark:text-stone-400">
+          <Spinner />
+          <p className="text-sm">Syncing your bakery data…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-stone-100 dark:bg-stone-950 text-stone-800 dark:text-stone-100 font-sans transition-colors duration-300">
