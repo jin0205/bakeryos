@@ -14,7 +14,7 @@ const SAMPLE_RECIPE = {
 
 test.describe('Formula Library — empty state', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => localStorage.removeItem('sourdough_recipes'));
+    await page.addInitScript(() => localStorage.removeItem('bakeryos_recipes'));
     await page.goto('/');
     // Navigate to Formula Library (app now starts on Home/Dashboard)
     await page.locator('aside').getByRole('button', { name: 'Formula Library' }).click();
@@ -38,7 +38,10 @@ test.describe('Formula Library — empty state', () => {
 test.describe('Formula Library — with recipes', () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript((recipe) => {
-      localStorage.setItem('sourdough_recipes', JSON.stringify([recipe]));
+      localStorage.setItem('bakeryos_recipes', JSON.stringify({
+        data: [recipe],
+        updatedAt: new Date().toISOString(),
+      }));
     }, SAMPLE_RECIPE);
     await page.goto('/');
     // Navigate to Formula Library (app now starts on Home/Dashboard)
@@ -62,12 +65,12 @@ test.describe('Formula Library — with recipes', () => {
 
   test('edit button opens the workbench', async ({ page }) => {
     // Pencil/edit button in actions column opens workbench
-    await page.getByTitle('Edit formula').click();
+    await page.getByRole('button', { name: 'Edit formula' }).click();
     await expect(page.getByRole('heading', { name: 'Formula Workbench' })).toBeVisible();
   });
 
   test('back button returns to library from workbench', async ({ page }) => {
-    await page.getByTitle('Edit formula').click();
+    await page.getByRole('button', { name: 'Edit formula' }).click();
     await expect(page.getByRole('heading', { name: 'Formula Workbench' })).toBeVisible();
 
     await page.getByRole('button', { name: /back/i }).click();

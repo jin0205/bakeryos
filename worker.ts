@@ -3,42 +3,83 @@
  *
  * - Serves the Vite-built SPA (./dist) for all non-API routes
  * - Proxies POST /api/messages → https://api.anthropic.com/v1/messages
- *   so the ANTHROPIC_API_KEY secret never ships to the browser
+ * - Handles GET/PUT /api/data/:key for KV-backed persistent storage
  */
 
 export interface Env {
-  /** Cloudflare static-asset binding (populated from wrangler.jsonc assets.directory) */
   ASSETS: Fetcher;
-  /** Cloudflare secret — set via: wrangler secret put ANTHROPIC_API_KEY */
   ANTHROPIC_API_KEY: string;
+  BAKERY_DATA: KVNamespace;
+  BAKERY_API_TOKEN: string;
 }
 
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, X-Bakery-Token',
 };
+
+const VALID_DATA_KEYS = [
+  'bakeryos_recipes',
+  'bakeryos_inventory',
+  'bakeryos_planner_items',
+  'bakeryos_work_orders',
+] as const;
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    // Handle CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: CORS_HEADERS });
     }
 
     const url = new URL(request.url);
 
-    // Route API calls to Anthropic proxy
     if (url.pathname === '/api/messages' && request.method === 'POST') {
       return proxyToAnthropic(request, env);
     }
 
-    // All other requests → serve SPA static assets
-    // not_found_handling: "single-page-application" (in wrangler.jsonc) means
-    // missing paths fall back to index.html automatically.
+    if (url.pathname.startsWith('/api/data/')) {
+      return handleDataRoute(request, env, url);
+    }
+
     return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
+
+async function handleDataRoute(request: Request, env: Env, url: URL): Promise<Response> {
+  const token = request.headers.get('X-Bakery-Token');
+  if (!token || token !== env.BAKERY_API_TOKEN) {
+    return errorResponse(401, 'Unauthorized');
+  }
+
+  const key = url.pathname.replace('/api/data/', '');
+  if (!(VALID_DATA_KEYS as readonly string[]).includes(key)) {
+    return errorResponse(400, `Invalid key: ${key}`);
+  }
+
+  if (request.method === 'GET') {
+    const value = await env.BAKERY_DATA.get(key);
+    const body = value ?? JSON.stringify({ data: [], updatedAt: new Date(0).toISOString() });
+    return new Response(body, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    });
+  }
+
+  if (request.method === 'PUT') {
+    let body: string;
+    try {
+      body = await request.text();
+      JSON.parse(body);
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
+    }
+    await env.BAKERY_DATA.put(key, body);
+    return new Response(null, { status: 204, headers: CORS_HEADERS });
+  }
+
+  return errorResponse(405, 'Method not allowed');
+}
 
 async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
   let body: string;
@@ -54,14 +95,13 @@ async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
     'anthropic-version': '2023-06-01',
   };
 
-  // Extended thinking requires a beta header — detect from request body
   try {
     const parsed = JSON.parse(body) as { thinking?: { type?: string } };
     if (parsed.thinking?.type === 'enabled') {
       headers['anthropic-beta'] = 'interleaved-thinking-2025-05-14';
     }
   } catch {
-    // Body is not valid JSON or unexpected shape — proceed without beta header
+    // proceed without beta header
   }
 
   let anthropicResponse: Response;
@@ -78,10 +118,7 @@ async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
   const responseBody = await anthropicResponse.text();
   return new Response(responseBody, {
     status: anthropicResponse.status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...CORS_HEADERS,
-    },
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
   });
 }
 

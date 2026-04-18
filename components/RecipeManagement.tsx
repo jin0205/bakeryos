@@ -3,6 +3,7 @@ import RecipeCalculator from './RecipeCalculator';
 import RecipeLibrary from './RecipeLibrary';
 import RecipeImporter from './RecipeImporter';
 import { SavedRecipe } from '../types';
+import { storageService } from '../services/storageService';
 import { PanelPayload } from '../App';
 
 type ViewMode = 'library' | 'workbench' | 'importer';
@@ -17,23 +18,13 @@ const RecipeManagement: React.FC<RecipeManagementProps> = ({ onOpenPanel }) => {
     const [activeRecipe, setActiveRecipe] = useState<SavedRecipe | null>(null);
 
     useEffect(() => {
-        const loadRecipes = () => {
-            const saved = localStorage.getItem('sourdough_recipes');
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    const migrated = parsed.map((r: any) => ({
-                        ...r,
-                        version: r.version || 1,
-                        history: r.history || []
-                    }));
-                    setSavedRecipes(migrated);
-                } catch (e) {
-                    console.error('Failed to load recipes', e);
-                }
-            }
-        };
-        loadRecipes();
+        const saved = storageService.load<SavedRecipe>('bakeryos_recipes');
+        const migrated = saved.map((r: SavedRecipe) => ({
+            ...r,
+            version: r.version || 1,
+            history: r.history || [],
+        }));
+        setSavedRecipes(migrated);
     }, [view]);
 
     const handleEditRecipe = (recipe: SavedRecipe) => {
@@ -50,7 +41,7 @@ const RecipeManagement: React.FC<RecipeManagementProps> = ({ onOpenPanel }) => {
         if (window.confirm('Are you sure you want to delete this recipe? This cannot be undone.')) {
             const updated = savedRecipes.filter(r => r.id !== id);
             setSavedRecipes(updated);
-            localStorage.setItem('sourdough_recipes', JSON.stringify(updated));
+            storageService.save('bakeryos_recipes', updated);
         }
     };
 

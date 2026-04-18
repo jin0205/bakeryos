@@ -1,21 +1,13 @@
 import React, { useMemo } from 'react';
 import { WorkOrder, SavedRecipe, InventoryItem, PlannerItem } from '../types';
 import { PanelPayload } from '../App';
+import { storageService } from '../services/storageService';
 
 type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 
 interface DashboardProps {
   onOpenPanel: (p: PanelPayload) => void;
   onNavigate: (tab: Tab) => void;
-}
-
-function loadJSON<T>(key: string): T[] {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
 }
 
 const STATUS_BADGE: Record<string, string> = {
@@ -31,10 +23,10 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
-  const workOrders  = useMemo(() => loadJSON<WorkOrder>('bakeryos_work_orders'),    []);
-  const recipes     = useMemo(() => loadJSON<SavedRecipe>('sourdough_recipes'),       []);
-  const inventory   = useMemo(() => loadJSON<InventoryItem>('sourdough_inventory'),   []);
-  const planItems   = useMemo(() => loadJSON<PlannerItem>('sourdough_planner_items'), []);
+  const workOrders  = useMemo(() => storageService.load<WorkOrder>('bakeryos_work_orders'),    []);
+  const recipes     = useMemo(() => storageService.load<SavedRecipe>('bakeryos_recipes'),       []);
+  const inventory   = useMemo(() => storageService.load<InventoryItem>('bakeryos_inventory'),   []);
+  const planItems   = useMemo(() => storageService.load<PlannerItem>('bakeryos_planner_items'), []);
 
   const activeWOs   = workOrders.filter(w => w.status === 'scheduled' || w.status === 'in-production');
   const lowStock    = inventory.filter(i => i.quantity < 2000);

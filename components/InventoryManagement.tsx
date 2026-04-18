@@ -4,6 +4,7 @@ import { InventoryItem, PlannerItem, UnitOfMeasure } from '../types';
 import { PanelPayload } from '../App';
 import { CalculatorIcon } from './icons/CalculatorIcon';
 import { BoxIcon } from './icons/BoxIcon';
+import { storageService } from '../services/storageService';
 
 const COMMON_INGREDIENTS_LIST = [
   'Bread Flour', 'Whole Wheat Flour', 'Rye Flour', 'Spelt Flour', 'Water', 'Levain', 'Salt', 'Instant Yeast',
@@ -47,14 +48,8 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
 
   useEffect(() => {
     const loadData = () => {
-      const invStr = localStorage.getItem('sourdough_inventory');
-      if (invStr) {
-        try { setInventory(JSON.parse(invStr)); } catch (e) { console.error('Failed to load inventory', e); }
-      }
-      const planStr = localStorage.getItem('sourdough_planner_items');
-      if (planStr) {
-        try { setPlannerItems(JSON.parse(planStr) || []); } catch (e) { console.error('Failed to load planner', e); }
-      }
+      setInventory(storageService.load<InventoryItem>('bakeryos_inventory'));
+      setPlannerItems(storageService.load<PlannerItem>('bakeryos_planner_items'));
     };
     loadData();
     window.addEventListener('storage', loadData);
@@ -63,7 +58,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
 
   const saveInventory = (next: InventoryItem[]) => {
     setInventory(next);
-    localStorage.setItem('sourdough_inventory', JSON.stringify(next));
+    storageService.save('bakeryos_inventory', next);
   };
 
   const convertToGrams = (amount: number, fromUnit: UnitOfMeasure): number => {

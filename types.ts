@@ -73,3 +73,9 @@ export interface WorkOrder {
   inventoryDeducted: boolean;
   notes: string;
 }
+
+export type StorageKey =
+  | 'bakeryos_recipes'
+  | 'bakeryos_inventory'
+  | 'bakeryos_planner_items'
+  | 'bakeryos_work_orders';

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { WorkOrder, WorkOrderStatus } from '../types';
 import { PanelPayload } from '../App';
+import { storageService } from '../services/storageService';
 
 const STATUS_BADGE: Record<WorkOrderStatus, string> = {
   'draft':         'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400',
@@ -27,19 +28,12 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
   const [scheduleDateInputs, setScheduleDateInputs] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const stored = localStorage.getItem('bakeryos_work_orders');
-    if (stored) {
-      try {
-        setWorkOrders(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to load work orders', e);
-      }
-    }
+    setWorkOrders(storageService.load<WorkOrder>('bakeryos_work_orders'));
   }, []);
 
   const saveWorkOrders = (updated: WorkOrder[]) => {
     setWorkOrders(updated);
-    localStorage.setItem('bakeryos_work_orders', JSON.stringify(updated));
+    storageService.save('bakeryos_work_orders', updated);
   };
 
   const updateStatus = (id: string, newStatus: WorkOrderStatus, scheduledDate?: string) => {

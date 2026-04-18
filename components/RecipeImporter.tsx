@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { parseRecipePdf, parseRecipeText } from '../services/claudeService';
 import { SavedRecipe, Ingredient } from '../types';
+import { storageService } from '../services/storageService';
 import Spinner from './Spinner';
 import { DocumentIcon } from './icons/DocumentIcon';
 import { SheetsIcon } from './icons/SheetsIcon';
@@ -208,10 +209,12 @@ const RecipeImporter: React.FC = () => {
         };
 
         try {
-            const existingStr = localStorage.getItem('sourdough_recipes');
-            const existing: SavedRecipe[] = existingStr ? JSON.parse(existingStr) : [];
-            const updated = [...existing, newRecipe];
-            localStorage.setItem('sourdough_recipes', JSON.stringify(updated));
+            const existing = storageService.load<SavedRecipe>('bakeryos_recipes');
+            const isUpdate = existing.some((r: SavedRecipe) => r.id === newRecipe.id);
+            const updated = isUpdate
+              ? existing.map((r: SavedRecipe) => r.id === newRecipe.id ? newRecipe : r)
+              : [...existing, newRecipe];
+            storageService.save('bakeryos_recipes', updated);
             setSuccessMessage("Recipe saved successfully! Check the Recipe Management tab.");
             setPreviewData(null);
             setFile(null);
