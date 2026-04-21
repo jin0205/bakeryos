@@ -1,0 +1,23 @@
+{
+  "eval_id": 0,
+  "eval_name": "sales-tracker",
+  "prompt": "Add a SalesTracker component to BakeryOS that shows estimated revenue by recipe for the week. It needs to read completed work orders from storage and sum up the estimatedCost per recipe name.",
+  "assertions": [
+    {
+      "text": "Uses correct localStorage key 'bakeryos_work_orders' (not 'sourdough_work_orders', 'work_orders', or any other variant)",
+      "type": "string_match"
+    },
+    {
+      "text": "Filters work orders by status === 'complete' (correct WorkOrderStatus value, not 'completed' or 'done')",
+      "type": "string_match"
+    },
+    {
+      "text": "Groups or sums using lineItems[].recipeName to identify recipe (not a made-up top-level recipeName field on WorkOrder)",
+      "type": "string_match"
+    },
+    {
+      "text": "References estimatedCost field on WorkOrder (correct field name, not revenue or totalCost)",
+      "type": "string_match"
+    }
+  ]
+}

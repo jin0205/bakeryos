@@ -1,0 +1,73 @@
+{
+  "skill_name": "bakery-types",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Add a SalesTracker component to BakeryOS that shows estimated revenue by recipe for the week. It needs to read completed work orders from storage and sum up the estimatedCost per recipe name.",
+      "expected_output": "A React component that reads from bakeryos_work_orders, uses WorkOrder/WorkOrderLineItem types correctly, filters by status='complete', groups by lineItems[].recipeName, and sums estimatedCost.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Uses correct localStorage key 'bakeryos_work_orders' (not 'sourdough_work_orders', 'work_orders', or any other variant)",
+          "type": "string_match"
+        },
+        {
+          "text": "Filters work orders by status === 'complete' (not 'completed' or 'done')",
+          "type": "string_match"
+        },
+        {
+          "text": "Groups or sums using lineItems[].recipeName to identify recipe (not a made-up top-level recipeName field on WorkOrder)",
+          "type": "string_match"
+        },
+        {
+          "text": "References estimatedCost field on WorkOrder (not revenue or totalCost)",
+          "type": "string_match"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I want to add an allergenTags field to recipe ingredients so bakers can flag things like 'gluten', 'dairy', 'nuts'. Walk me through where this would go in types.ts and how existing components that read sourdough_recipes would be affected.",
+      "expected_output": "Correctly identifies Ingredient interface as the target, makes field optional for backward compat, names sourdough_recipes as the key, notes both flours and ingredients arrays carry Ingredient objects.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Correctly targets the Ingredient interface (not RecipeSnapshot or SavedRecipe) as the location to add allergenTags",
+          "type": "correctness"
+        },
+        {
+          "text": "Makes field optional (allergenTags?: string[]) to preserve backward compatibility",
+          "type": "correctness"
+        },
+        {
+          "text": "Correctly names the localStorage key as 'sourdough_recipes' (not 'bakeryos_recipes' or 'recipes')",
+          "type": "string_match"
+        },
+        {
+          "text": "Notes that both flours and ingredients arrays on RecipeSnapshot contain Ingredient objects",
+          "type": "correctness"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Build a LowStockAlert component that reads inventory data and returns a count of items below 500g. I want to show a badge number in the sidebar when stock is low.",
+      "expected_output": "Reads from sourdough_inventory (not bakeryos_inventory), uses InventoryItem with quantity field in grams, compares quantity < 500 directly without unit conversion.",
+      "files": [],
+      "assertions": [
+        {
+          "text": "Uses 'sourdough_inventory' as the localStorage key (not 'bakeryos_inventory')",
+          "type": "string_match"
+        },
+        {
+          "text": "Uses InventoryItem type with the quantity field (not stock, amount, or other invented field name)",
+          "type": "string_match"
+        },
+        {
+          "text": "Compares quantity directly to 500 without unit conversion (quantity is already in grams)",
+          "type": "correctness"
+        }
+      ]
+    }
+  ]
+}

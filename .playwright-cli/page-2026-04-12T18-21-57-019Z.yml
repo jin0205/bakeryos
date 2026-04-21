@@ -1,0 +1,45 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - heading "BakeryOS" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Production Intelligence Platform
+    - navigation [ref=e8]:
+      - button "Formula Library" [ref=e9] [cursor=pointer]:
+        - img [ref=e10]
+        - text: Formula Library
+      - button "Production" [ref=e12] [cursor=pointer]:
+        - img [ref=e13]
+        - text: Production
+      - button "Inventory" [ref=e15] [cursor=pointer]:
+        - img [ref=e16]
+        - text: Inventory
+      - button "Cost & Margin" [ref=e18] [cursor=pointer]:
+        - img [ref=e19]
+        - text: Cost & Margin
+      - button "R&D Lab" [ref=e21] [cursor=pointer]:
+        - img [ref=e22]
+        - text: R&D Lab
+    - button "Switch to dark mode" [ref=e26] [cursor=pointer]:
+      - img [ref=e27]
+      - generic [ref=e29]: Dark Mode
+  - main [ref=e30]:
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - paragraph [ref=e34]: FORMULA LIBRARY
+        - heading "Formula Library" [level=1] [ref=e35]
+      - generic [ref=e36]:
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - generic:
+              - img
+            - textbox "Search formulas…" [ref=e39]
+          - generic [ref=e40]:
+            - combobox [ref=e41] [cursor=pointer]:
+              - option "Newest First" [selected]
+              - option "Oldest First"
+              - option "Name (A–Z)"
+            - button "+ New Formula" [ref=e42] [cursor=pointer]
+        - generic [ref=e44]:
+          - img [ref=e45]
+          - paragraph [ref=e47]: Your library is empty.
+          - button "+ New Formula" [ref=e48] [cursor=pointer]

@@ -1,0 +1,29 @@
+{
+  "eval_id": 1,
+  "eval_name": "extend-types",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Correctly targets the Ingredient interface (not RecipeSnapshot or SavedRecipe) as the location to add allergenTags",
+      "passed": true,
+      "evidence": "States 'The Ingredient interface is the single source of truth. Add one optional field' — correctly identifies Ingredient, not RecipeSnapshot/SavedRecipe"
+    },
+    {
+      "text": "Makes field optional (allergenTags?: string[]) to preserve backward compatibility",
+      "passed": true,
+      "evidence": "Uses allergenTags?: string[] and explains 'Making it optional means every existing record stays valid with zero migration'"
+    },
+    {
+      "text": "Correctly names the localStorage key as 'sourdough_recipes' (not 'bakeryos_recipes' or 'recipes')",
+      "passed": true,
+      "evidence": "States 'every existing record in localStorage (sourdough_recipes) stays valid' — correct key name"
+    },
+    {
+      "text": "Notes that both flours and ingredients arrays on RecipeSnapshot contain Ingredient objects",
+      "passed": false,
+      "evidence": "Mentions 'RecipeCalculator.tsx holds flours and ingredients in state' but doesn't explicitly note that both flours and ingredients on RecipeSnapshot are Ingredient[] arrays. Focuses on component-level impact rather than type structure."
+    }
+  ],
+  "pass_rate": 0.75,
+  "notes": "Agent read types.ts and RecipeCalculator.tsx directly. Missed the explicit call-out that both RecipeSnapshot.flours and RecipeSnapshot.ingredients are Ingredient[] arrays."
+}

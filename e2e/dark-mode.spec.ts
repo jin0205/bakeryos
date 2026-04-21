@@ -9,39 +9,39 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('shows dark mode toggle button', async ({ page }) => {
-  await expect(page.getByRole('button', { name: /dark mode|light mode/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /amoled mode|light mode/i })).toBeVisible();
 });
 
-test('toggles from light to dark mode', async ({ page }) => {
+test('toggles from light to AMOLED mode', async ({ page }) => {
   const html = page.locator('html');
-  await expect(html).not.toHaveClass(/dark/);
+  await expect(html).not.toHaveClass(/theme-amoled/);
 
-  await page.getByRole('button', { name: 'Dark Mode' }).click();
+  await page.getByRole('button', { name: 'AMOLED Mode' }).click();
 
-  await expect(html).toHaveClass(/dark/);
+  await expect(html).toHaveClass(/theme-amoled/);
   await expect(page.getByRole('button', { name: 'Light Mode' })).toBeVisible();
 });
 
-test('persists dark mode preference in localStorage', async ({ page }) => {
-  await page.getByRole('button', { name: 'Dark Mode' }).click();
+test('persists AMOLED preference in localStorage', async ({ page }) => {
+  await page.getByRole('button', { name: 'AMOLED Mode' }).click();
 
   const theme = await page.evaluate(() => localStorage.getItem('bakeryos_theme'));
-  expect(theme).toBe('dark');
+  expect(theme).toBe('amoled');
 });
 
-test('restores dark mode on reload', async ({ page }) => {
-  // Set dark mode via localStorage and reload (avoids addInitScript override issues)
-  await page.evaluate(() => localStorage.setItem('bakeryos_theme', 'dark'));
+test('restores AMOLED mode on reload', async ({ page }) => {
+  // Set AMOLED mode via localStorage and reload (avoids addInitScript override issues)
+  await page.evaluate(() => localStorage.setItem('bakeryos_theme', 'amoled'));
   await page.reload();
 
   await expect(page.getByText('BakeryOS')).toBeVisible();
-  await expect(page.locator('html')).toHaveClass(/dark/);
+  await expect(page.locator('html')).toHaveClass(/theme-amoled/);
 });
 
-test('toggles back from dark to light mode', async ({ page }) => {
-  await page.getByRole('button', { name: 'Dark Mode' }).click();
-  await expect(page.locator('html')).toHaveClass(/dark/);
+test('toggles back from AMOLED to light mode', async ({ page }) => {
+  await page.getByRole('button', { name: 'AMOLED Mode' }).click();
+  await expect(page.locator('html')).toHaveClass(/theme-amoled/);
 
   await page.getByRole('button', { name: 'Light Mode' }).click();
-  await expect(page.locator('html')).not.toHaveClass(/dark/);
+  await expect(page.locator('html')).not.toHaveClass(/theme-amoled/);
 });

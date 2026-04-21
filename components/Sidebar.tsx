@@ -18,7 +18,7 @@ interface SidebarProps {
   setActiveLabTab: (tab: LabTab) => void;
   activeProductionTab: ProductionTab;
   setActiveProductionTab: (tab: ProductionTab) => void;
-  isDarkMode: boolean;
+  themeMode: 'light' | 'amoled';
   toggleTheme: () => void;
 }
 
@@ -50,8 +50,9 @@ const productionSubItems: { id: ProductionTab; label: string; Icon: React.Compon
 
 const Sidebar: React.FC<SidebarProps> = ({
   activeTab, setActiveTab, activeLabTab, setActiveLabTab,
-  activeProductionTab, setActiveProductionTab, isDarkMode, toggleTheme
+  activeProductionTab, setActiveProductionTab, themeMode, toggleTheme
 }) => {
+  const isAmoledMode = themeMode === 'amoled';
   return (
     <aside className="w-64 flex-shrink-0 h-screen sticky top-0 bg-white dark:bg-stone-900 border-r border-stone-200 dark:border-stone-800 flex flex-col transition-colors duration-300">
       {/* Branding */}
@@ -126,9 +127,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         <button
           onClick={toggleTheme}
           className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-stone-600 dark:text-stone-400 rounded-lg hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isAmoledMode ? 'Switch to light mode' : 'Switch to AMOLED mode'}
         >
-          {isDarkMode ? (
+          {isAmoledMode ? (
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 9h-1m15.364-6.364l-.707.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M6.343 6.343l-.707-.707M12 5a7 7 0 100 14 7 7 0 000-14z" />
             </svg>
@@ -137,7 +138,7 @@ const Sidebar: React.FC<SidebarProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           )}
-          <span>{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
+          <span>{isAmoledMode ? 'Light Mode' : 'AMOLED Mode'}</span>
         </button>
       </div>
     </aside>

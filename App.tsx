@@ -16,6 +16,7 @@ import Spinner from './components/Spinner';
 
 type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
 export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
+type ThemeMode = 'light' | 'amoled';
 
 export type PanelPayload =
   | { type: 'formula';         data: SavedRecipe }
@@ -52,10 +53,11 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>(initial.tab);
   const [activeLabTab, setActiveLabTab] = useState<LabTab>(initial.labTab);
   const [activeProductionTab, setActiveProductionTab] = useState<ProductionTab>(initial.productionTab);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('bakeryos_theme');
-    if (saved) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (saved === 'amoled' || saved === 'dark') return 'amoled';
+    if (saved === 'light') return 'light';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'amoled' : 'light';
   });
   const [panel, setPanel] = useState<PanelPayload | null>(null);
 
@@ -71,16 +73,13 @@ const App: React.FC = () => {
   const closePanel = () => setPanel(null);
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('bakeryos_theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('bakeryos_theme', 'light');
-    }
-  }, [isDarkMode]);
+    const root = document.documentElement;
+    root.classList.remove('dark', 'theme-light', 'theme-amoled');
+    root.classList.add(themeMode === 'amoled' ? 'theme-amoled' : 'theme-light');
+    localStorage.setItem('bakeryos_theme', themeMode);
+  }, [themeMode]);
 
-  const toggleTheme = () => setIsDarkMode(!isDarkMode);
+  const toggleTheme = () => setThemeMode((prev) => (prev === 'amoled' ? 'light' : 'amoled'));
 
   // Sync hash → state (browser back/forward)
   useEffect(() => {
@@ -197,7 +196,7 @@ const App: React.FC = () => {
         setActiveLabTab={setActiveLabTab}
         activeProductionTab={activeProductionTab}
         setActiveProductionTab={setActiveProductionTab}
-        isDarkMode={isDarkMode}
+        themeMode={themeMode}
         toggleTheme={toggleTheme}
       />
       <main className="flex-1 overflow-y-auto">
