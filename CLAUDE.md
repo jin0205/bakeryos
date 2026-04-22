@@ -34,7 +34,7 @@ BakeryOS is a sourdough/artisan bakery ERP web app for commercial baker Kevin. I
 - **Tailwind CSS** — dark mode via `dark:` prefix; amber/stone color palette
 - **Anthropic Claude** — all AI calls in `services/claudeService.ts` via `fetch` to `/api/messages`
 - **Cloudflare Workers** — `worker.ts` proxies `/api/messages` → Anthropic; `ANTHROPIC_API_KEY` stored as a Cloudflare secret
-- **localStorage** — all data persistence (no backend, no database)
+- **localStorage** — all data persistence (no backend, no database); use `storageService.load<T>(key)` / `storageService.save(key, data)` — not raw `localStorage`. Data is wrapped in a versioned envelope `{ data: T[], updatedAt: string }`.
 - **Playwright** — E2E tests in `e2e/` (navigation, formula library, dark mode)
 
 ## Project Structure
@@ -42,14 +42,18 @@ BakeryOS is a sourdough/artisan bakery ERP web app for commercial baker Kevin. I
 App.tsx              # Root: tab routing, dark mode state, top-level layout
 components/          # All UI — one file per feature, React.FC pattern
   Sidebar.tsx        # Nav: registers all top-level tabs + sub-tabs
+  Dashboard.tsx      # Home tab: KPIs, today's schedule, quick nav
+  ContextPanel.tsx   # Slide-in panel for quick recipe/inventory/order views
 services/
   claudeService.ts   # All Claude API calls, prompt templates
+  storageService.ts  # Typed localStorage wrapper (load/save with versioned envelopes)
 types.ts             # Shared TypeScript types (Recipe, WorkOrder, etc.)
 ```
 
 ## UI Conventions
 - Components are `React.FC` with explicit prop interfaces
 - Dark mode classes always paired: `bg-white dark:bg-stone-900`
+- **Theme system:** Two modes — `'light'` and `'amoled'` (no generic `'dark'` mode). The `dark:` Tailwind prefix works via a `@custom-variant` alias in `index.css` that maps it to `.theme-amoled`. Do not introduce a `'dark'` ThemeMode value.
 - **Amber** palette for active/brand: `text-amber-600`, `bg-amber-50 dark:bg-amber-900/20`
 - **Stone** palette for neutral/chrome: `text-stone-600 dark:text-stone-400`
 - localStorage keys prefixed: `bakeryos_<feature>`
@@ -65,6 +69,11 @@ types.ts             # Shared TypeScript types (Recipe, WorkOrder, etc.)
 | Page heading | `text-2xl font-bold text-stone-900 dark:text-stone-50` |
 | Body text | `text-stone-600 dark:text-stone-300` |
 | Table dividers | `divide-y divide-stone-200 dark:divide-stone-700` |
+
+## Context Panel Conventions
+- Table row clicks open `ContextPanel` for quick viewing (panel payload: `{ type, id, data }`)
+- Edit/action buttons open the full workbench view (navigates to the component)
+- Pass `onOpenPanel: (p: PanelPayload) => void` prop to components that support panels
 
 ## How to Add a New Top-Level Feature Tab
 1. Create `components/MyFeature.tsx` as `React.FC`
@@ -92,8 +101,6 @@ Use skill: `/new-component MyFeature my-feature "My Feature Label"`
 - This project deploys to **Cloudflare Workers**, NOT Vercel
 - Do not add Vercel-specific dependencies or configuration
 - Static SPA with Cloudflare Workers for API proxy
-
-> **This project deploys to Cloudflare Workers, NOT Vercel.** Do not add Vercel-specific dependencies or configuration. The app is a static SPA with a Cloudflare Workers API proxy.
 
 Deploys to **Cloudflare Workers** (static SPA + API proxy in one Worker):
 
