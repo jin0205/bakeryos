@@ -48,7 +48,7 @@ test.describe('Sales Tracking', () => {
       // Item may render as a select/combobox when recipes are present
       const combobox = page.getByRole('combobox').first();
       if (await combobox.isVisible()) {
-        await combobox.selectOption({ index: 0 });
+        await combobox.selectOption({ index: 1 });
       }
     }
 

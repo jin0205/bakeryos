@@ -10,6 +10,8 @@ const ALL_KEYS: StorageKey[] = [
   'bakeryos_inventory',
   'bakeryos_planner_items',
   'bakeryos_work_orders',
+  'bakeryos_distributions',
+  'bakeryos_square_item_map',
 ];
 
 const TOKEN = ((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_BAKERY_API_TOKEN) ?? '';
