@@ -106,20 +106,23 @@ const SalesTracking: React.FC = () => {
 
   const handleFetchCatalog = async () => {
     setFetchingCatalog(true);
-    const results: Partial<Record<SquareLocationId, string[]>> = {};
-    await Promise.all(
-      credentials
-        .filter(c => c.access_token && c.square_location_id)
-        .map(async c => {
-          try {
-            results[c.location_id] = await fetchCatalogItemNames(c);
-          } catch {
-            results[c.location_id] = [];
-          }
-        }),
-    );
-    setCatalogItems(results);
-    setFetchingCatalog(false);
+    try {
+      const results: Partial<Record<SquareLocationId, string[]>> = {};
+      await Promise.all(
+        credentials
+          .filter(c => c.access_token && c.square_location_id)
+          .map(async c => {
+            try {
+              results[c.location_id] = await fetchCatalogItemNames(c);
+            } catch {
+              results[c.location_id] = [];
+            }
+          }),
+      );
+      setCatalogItems(results);
+    } finally {
+      setFetchingCatalog(false);
+    }
   };
 
   return (
@@ -384,19 +387,21 @@ interface LogTabProps {
   setShowLogForm: (v: boolean) => void;
 }
 
-const EMPTY_FORM = {
-  date: new Date().toISOString().substring(0, 10),
-  location: 'food1' as SquareLocationId,
-  item_name: '',
-  quantity_distributed: 1,
-  notes: '',
-};
+function makeEmptyForm() {
+  return {
+    date: new Date().toISOString().substring(0, 10),
+    location: 'food1' as SquareLocationId,
+    item_name: '',
+    quantity_distributed: 1,
+    notes: '',
+  };
+}
 
 const LogTab: React.FC<LogTabProps> = ({
   distributions, setDistributions, salesCache, itemMappings,
   recipeNames, syncing, onSync, showLogForm, setShowLogForm,
 }) => {
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(makeEmptyForm);
 
   const sorted = useMemo(
     () => [...distributions].sort((a, b) => b.date.localeCompare(a.date)),
@@ -426,7 +431,7 @@ const LogTab: React.FC<LogTabProps> = ({
     const updated = [...distributions, entry];
     setDistributions(updated);
     storageService.save('bakeryos_distributions', updated);
-    setForm(EMPTY_FORM);
+    setForm(makeEmptyForm());
     setShowLogForm(false);
   };
 
@@ -440,7 +445,7 @@ const LogTab: React.FC<LogTabProps> = ({
               <div className="space-y-0.5">
                 {salesCache.sync_errors.map(e => (
                   <p key={e.location_id} className="text-xs text-red-600 dark:text-red-400">
-                    ⚠ {e.error}
+                    {e.error}
                   </p>
                 ))}
               </div>
