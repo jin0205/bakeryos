@@ -17,6 +17,7 @@ test('renders all main nav items', async ({ page }) => {
   await expect(sidebar.getByRole('button', { name: 'Inventory', exact: true })).toBeVisible();
   await expect(sidebar.getByRole('button', { name: 'Cost & Margin' })).toBeVisible();
   await expect(sidebar.getByRole('button', { name: 'R&D Lab' })).toBeVisible();
+  await expect(sidebar.getByRole('button', { name: 'Sales Tracking' })).toBeVisible();
 });
 
 test('Home tab is active by default', async ({ page }) => {
