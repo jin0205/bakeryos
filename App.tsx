@@ -9,12 +9,13 @@ import CostAnalysis from './components/CostAnalysis';
 import WorkOrders from './components/WorkOrders';
 import ProductionSchedule from './components/ProductionSchedule';
 import Dashboard from './components/Dashboard';
+import SalesTracking from './components/SalesTracking';
 import ContextPanel from './components/ContextPanel';
 import { PlannerItem, WorkOrder, WorkOrderLineItem, SavedRecipe, InventoryItem } from './types';
 import { storageService } from './services/storageService';
 import Spinner from './components/Spinner';
 
-type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
+type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab' | 'sales';
 export type ProductionTab = 'work-orders' | 'schedule' | 'batch-builder';
 type ThemeMode = 'light' | 'amoled';
 
@@ -27,7 +28,7 @@ export type PanelPayload =
   | { type: 'kpi-formulas';    items: SavedRecipe[] }
   | { type: 'kpi-batch';       items: PlannerItem[] };
 
-const VALID_TABS: Tab[] = ['home', 'formulas', 'production', 'inventory', 'cost', 'lab'];
+const VALID_TABS: Tab[] = ['home', 'formulas', 'production', 'inventory', 'cost', 'lab', 'sales'];
 const VALID_PRODUCTION_TABS: ProductionTab[] = ['work-orders', 'schedule', 'batch-builder'];
 const VALID_LAB_TABS: LabTab[] = ['assistant', 'calculators'];
 
@@ -172,6 +173,7 @@ const App: React.FC = () => {
       case 'inventory':  return <InventoryManagement onOpenPanel={openPanel} />;
       case 'cost':       return <CostAnalysis />;
       case 'lab':        return <BakingLab activeLabTab={activeLabTab} onNavigateToLibrary={() => handleSetActiveTab('formulas')} />;
+      case 'sales':      return <SalesTracking />;
       default:           return <Dashboard onOpenPanel={openPanel} onNavigate={handleSetActiveTab} />;
     }
   };

@@ -6,10 +6,11 @@ import { CalculatorIcon } from './icons/CalculatorIcon';
 import { LabIcon } from './icons/LabIcon';
 import { SparklesIcon } from './icons/SparklesIcon';
 import { CalendarIcon } from './icons/CalendarIcon';
+import { SheetsIcon } from './icons/SheetsIcon';
 import { LabTab } from './BakingLab';
 import { ProductionTab } from '../App';
 
-type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab';
+type Tab = 'home' | 'formulas' | 'production' | 'inventory' | 'cost' | 'lab' | 'sales';
 
 interface SidebarProps {
   activeTab: Tab;
@@ -35,6 +36,7 @@ const mainNavItems: { id: Tab; label: string; Icon: React.ComponentType<{ classN
   { id: 'inventory',   label: 'Inventory',        Icon: BoxIcon },
   { id: 'cost',        label: 'Cost & Margin',    Icon: CalculatorIcon },
   { id: 'lab',         label: 'R&D Lab',          Icon: LabIcon },
+  { id: 'sales',       label: 'Sales Tracking',   Icon: SheetsIcon },
 ];
 
 const labSubItems: { id: LabTab; label: string; Icon: React.ComponentType<{ className?: string }> }[] = [

@@ -74,8 +74,50 @@ export interface WorkOrder {
   notes: string;
 }
 
+// Square integration types use snake_case to match Square API field names directly.
+export type SquareLocationId = 'food1' | 'food2' | 'bread';
+
+export interface DistributionEntry {
+  id: string;
+  date: string;               // ISO date, e.g. "2026-04-22"
+  location: SquareLocationId;
+  item_name: string;
+  quantity_distributed: number;
+  notes?: string;
+}
+
+export interface SquareCredential {
+  location_id: SquareLocationId;
+  access_token: string;
+  square_location_id: string; // Square's internal location ID
+}
+
+export interface SquareItemMapping {
+  square_item_name: string;
+  bread_item_name: string;
+  units_per_sale: number;     // how many bread units per Square sale transaction
+  location_id: SquareLocationId;
+}
+
+export interface SquareSaleEntry {
+  location_id: SquareLocationId;
+  date: string;               // YYYY-MM-DD
+  square_item_name: string;
+  quantity_sold: number;
+}
+
+export interface SquareSalesCache {
+  last_synced_at: string;     // ISO datetime
+  sales: SquareSaleEntry[];
+  sync_errors: { location_id: SquareLocationId; error: string }[];
+}
+
 export type StorageKey =
   | 'bakeryos_recipes'
   | 'bakeryos_inventory'
   | 'bakeryos_planner_items'
-  | 'bakeryos_work_orders';
+  | 'bakeryos_work_orders'
+  | 'bakeryos_distributions'
+  | 'bakeryos_square_credentials'
+  | 'bakeryos_square_item_map'
+  | 'bakeryos_square_sales_cache';
