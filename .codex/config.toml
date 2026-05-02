@@ -1,0 +1,10 @@
+[mcp_servers.ccusage]
+args = ["@ccusage/mcp@latest"]
+command = "npx"
+
+[mcp_servers.github]
+args = [
+    "-y",
+    "@modelcontextprotocol/server-github",
+]
+command = "npx"

@@ -6,6 +6,8 @@
  * - Handles GET/PUT /api/data/:key for KV-backed persistent storage
  */
 
+import type { SquareCredential, SquareCredentialStatus, SquareItemMapping, SquareLocationId, SquareSaleEntry, SquareSalesCache } from './types';
+
 export interface Env {
   ASSETS: Fetcher;
   ANTHROPIC_API_KEY: string;
@@ -26,6 +28,10 @@ const VALID_DATA_KEYS = [
   'bakeryos_work_orders',
 ] as const;
 
+const SQUARE_CREDENTIALS_KEY = 'private_square_credentials';
+const SQUARE_BASE = 'https://connect.squareup.com/v2';
+const SQUARE_LOCATIONS: SquareLocationId[] = ['food1', 'food2', 'bread'];
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') {
@@ -42,13 +48,16 @@ export default {
       return handleDataRoute(request, env, url);
     }
 
+    if (url.pathname.startsWith('/api/square/')) {
+      return handleSquareRoute(request, env, url);
+    }
+
     return env.ASSETS.fetch(request);
   },
 } satisfies ExportedHandler<Env>;
 
 async function handleDataRoute(request: Request, env: Env, url: URL): Promise<Response> {
-  const token = request.headers.get('X-Bakery-Token');
-  if (!token || token !== env.BAKERY_API_TOKEN) {
+  if (!isAuthorized(request, env)) {
     return errorResponse(401, 'Unauthorized');
   }
 
@@ -79,6 +88,251 @@ async function handleDataRoute(request: Request, env: Env, url: URL): Promise<Re
   }
 
   return errorResponse(405, 'Method not allowed');
+}
+
+async function handleSquareRoute(request: Request, env: Env, url: URL): Promise<Response> {
+  if (!isAuthorized(request, env)) {
+    return errorResponse(401, 'Unauthorized');
+  }
+
+  if (url.pathname === '/api/square/credentials') {
+    if (request.method === 'GET') {
+      const credentials = await loadSquareCredentials(env);
+      const statuses: SquareCredentialStatus[] = SQUARE_LOCATIONS.map(location_id => {
+        const credential = credentials.find(c => c.location_id === location_id);
+        return {
+          location_id,
+          square_location_id: credential?.square_location_id ?? '',
+          configured: Boolean(credential?.access_token && credential.square_location_id),
+        };
+      });
+      return jsonResponse(statuses);
+    }
+
+    if (request.method === 'PUT') {
+      let payload: { credentials?: SquareCredential[] };
+      try {
+        payload = await request.json();
+      } catch {
+        return errorResponse(400, 'Invalid JSON body');
+      }
+      if (!Array.isArray(payload.credentials)) {
+        return errorResponse(400, 'Missing credentials array');
+      }
+
+      const existing = await loadSquareCredentials(env);
+      const merged = mergeSquareCredentials(existing, payload.credentials);
+      await env.BAKERY_DATA.put(SQUARE_CREDENTIALS_KEY, JSON.stringify(merged));
+      return new Response(null, { status: 204, headers: CORS_HEADERS });
+    }
+
+    return errorResponse(405, 'Method not allowed');
+  }
+
+  if (url.pathname === '/api/square/catalog' && request.method === 'GET') {
+    const credentials = await loadSquareCredentials(env);
+    const configured = credentials.filter(c => c.access_token && c.square_location_id);
+    const itemNames = new Set<string>();
+
+    const results = await Promise.allSettled(configured.map(fetchCatalogItemNames));
+    results.forEach(result => {
+      if (result.status === 'fulfilled') {
+        result.value.forEach(name => itemNames.add(name));
+      }
+    });
+
+    return jsonResponse({ items: Array.from(itemNames).sort() });
+  }
+
+  if (url.pathname === '/api/square/sync' && request.method === 'POST') {
+    let payload: { mappings?: SquareItemMapping[]; startDate?: string };
+    try {
+      payload = await request.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
+    }
+
+    if (!Array.isArray(payload.mappings) || !payload.startDate) {
+      return errorResponse(400, 'Missing mappings or startDate');
+    }
+
+    const credentials = (await loadSquareCredentials(env)).filter(c => c.access_token && c.square_location_id);
+    const cache = await syncSquareOrders(credentials, payload.mappings, payload.startDate);
+    return jsonResponse(cache);
+  }
+
+  return errorResponse(404, 'Not found');
+}
+
+function isAuthorized(request: Request, env: Env): boolean {
+  const token = request.headers.get('X-Bakery-Token');
+  return Boolean(token && timingSafeEqual(token, env.BAKERY_API_TOKEN));
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  const encoder = new TextEncoder();
+  const aBytes = encoder.encode(a);
+  const bBytes = encoder.encode(b);
+  const length = Math.max(aBytes.length, bBytes.length);
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < length; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return diff === 0;
+}
+
+async function loadSquareCredentials(env: Env): Promise<SquareCredential[]> {
+  const raw = await env.BAKERY_DATA.get(SQUARE_CREDENTIALS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as SquareCredential[];
+    return Array.isArray(parsed) ? parsed.filter(isSquareCredential) : [];
+  } catch {
+    return [];
+  }
+}
+
+function mergeSquareCredentials(existing: SquareCredential[], incoming: SquareCredential[]): SquareCredential[] {
+  return SQUARE_LOCATIONS.flatMap(location_id => {
+    const next = incoming.find(c => c.location_id === location_id);
+    const current = existing.find(c => c.location_id === location_id);
+    const squareLocationId = next?.square_location_id.trim() || current?.square_location_id || '';
+    const accessToken = next?.access_token.trim() || current?.access_token || '';
+    if (!squareLocationId || !accessToken) return [];
+    return [{ location_id, square_location_id: squareLocationId, access_token: accessToken }];
+  });
+}
+
+function isSquareCredential(value: unknown): value is SquareCredential {
+  const credential = value as Partial<SquareCredential>;
+  return (
+    SQUARE_LOCATIONS.includes(credential.location_id as SquareLocationId) &&
+    typeof credential.access_token === 'string' &&
+    typeof credential.square_location_id === 'string'
+  );
+}
+
+async function fetchCatalogItemNames(credential: SquareCredential): Promise<string[]> {
+  const res = await fetch(`${SQUARE_BASE}/catalog/list?types=ITEM`, {
+    headers: { Authorization: `Bearer ${credential.access_token}` },
+  });
+  if (!res.ok) throw new Error(`Square catalog fetch failed: ${res.status}`);
+  const body = await res.json() as { objects?: { type: string; item_data?: { name?: string } }[] };
+  return (body.objects ?? [])
+    .filter(o => o.type === 'ITEM' && o.item_data?.name)
+    .map(o => o.item_data!.name!);
+}
+
+async function searchOrders(
+  credential: SquareCredential,
+  startDate: string,
+  endDate: string,
+  mappings: SquareItemMapping[],
+): Promise<{ entries: SquareSaleEntry[]; error?: string }> {
+  const mappedNames = new Set(
+    mappings.filter(m => m.location_id === credential.location_id).map(m => m.square_item_name),
+  );
+
+  const query = {
+    location_ids: [credential.square_location_id],
+    query: {
+      filter: {
+        date_time_filter: {
+          closed_at: {
+            start_at: `${startDate}T00:00:00Z`,
+            end_at: `${endDate}T23:59:59Z`,
+          },
+        },
+        state_filter: { states: ['COMPLETED'] },
+      },
+    },
+  };
+
+  type OrdersResponse = {
+    orders?: {
+      closed_at?: string;
+      created_at?: string;
+      line_items?: { name?: string; quantity?: string }[];
+    }[];
+    cursor?: string;
+  };
+
+  const aggregated = new Map<string, SquareSaleEntry>();
+
+  try {
+    let cursor: string | undefined;
+    do {
+      const res = await fetch(`${SQUARE_BASE}/orders/search`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${credential.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(cursor ? { ...query, cursor } : query),
+      });
+
+      if (res.status === 401) {
+        return { entries: [], error: `Credentials invalid for ${credential.location_id} - check Settings` };
+      }
+      if (!res.ok) {
+        return { entries: [], error: `Square API error ${res.status} for ${credential.location_id}` };
+      }
+
+      const body = await res.json() as OrdersResponse;
+
+      for (const order of body.orders ?? []) {
+        const date = (order.closed_at ?? order.created_at ?? '').substring(0, 10);
+        if (!date) continue;
+
+        for (const item of order.line_items ?? []) {
+          if (!item.name || !mappedNames.has(item.name)) continue;
+          const key = `${credential.location_id}|${date}|${item.name}`;
+          const existing = aggregated.get(key);
+          const qty = parseInt(item.quantity ?? '1', 10);
+          if (existing) {
+            existing.quantity_sold += qty;
+          } else {
+            aggregated.set(key, {
+              location_id: credential.location_id,
+              date,
+              square_item_name: item.name,
+              quantity_sold: qty,
+            });
+          }
+        }
+      }
+
+      cursor = body.cursor;
+    } while (cursor);
+
+    return { entries: Array.from(aggregated.values()) };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Network error';
+    return { entries: [], error: `${credential.location_id}: ${msg}` };
+  }
+}
+
+async function syncSquareOrders(
+  credentials: SquareCredential[],
+  mappings: SquareItemMapping[],
+  startDate: string,
+): Promise<SquareSalesCache> {
+  const endDate = new Date().toISOString().substring(0, 10);
+  const results = await Promise.all(credentials.map(c => searchOrders(c, startDate, endDate, mappings)));
+  const allSales: SquareSaleEntry[] = [];
+  const errors: { location_id: SquareLocationId; error: string }[] = [];
+
+  for (let i = 0; i < credentials.length; i++) {
+    const { entries, error } = results[i];
+    allSales.push(...entries);
+    if (error) errors.push({ location_id: credentials[i].location_id, error });
+  }
+
+  return {
+    last_synced_at: new Date().toISOString(),
+    sales: allSales,
+    sync_errors: errors,
+  };
 }
 
 async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
@@ -124,6 +378,13 @@ async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
 
 function errorResponse(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+  });
+}
+
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
     status,
     headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
   });

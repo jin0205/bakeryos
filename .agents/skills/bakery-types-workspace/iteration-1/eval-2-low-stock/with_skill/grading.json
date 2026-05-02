@@ -1,0 +1,23 @@
+{
+  "eval_id": 2,
+  "eval_name": "low-stock",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Uses 'sourdough_inventory' as the localStorage key (not 'bakeryos_inventory' — the tricky one since newer convention would suggest bakeryos_ prefix)",
+      "passed": true,
+      "evidence": "Uses localStorage.getItem('sourdough_inventory') and explicitly notes 'legacy-prefixed key that predates the bakeryos_ convention and must NOT be renamed (would wipe user data)'"
+    },
+    {
+      "text": "Uses InventoryItem type with the quantity field (not stock, amount, or other invented field name)",
+      "passed": true,
+      "evidence": "Imports InventoryItem from '../types', uses item.quantity directly throughout"
+    },
+    {
+      "text": "Compares quantity directly to 500 without unit conversion (quantity is already in grams)",
+      "passed": true,
+      "evidence": "Uses item.quantity < LOW_STOCK_THRESHOLD_G where threshold is 500, with comment 'quantity is always stored in grams, so comparing directly against 500 requires no unit conversion'"
+    }
+  ],
+  "pass_rate": 1.0
+}

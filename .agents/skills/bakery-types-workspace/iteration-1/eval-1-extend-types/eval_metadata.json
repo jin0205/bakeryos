@@ -1,0 +1,23 @@
+{
+  "eval_id": 1,
+  "eval_name": "extend-types",
+  "prompt": "I want to add an allergenTags field to recipe ingredients so bakers can flag things like 'gluten', 'dairy', 'nuts'. Walk me through where this would go in types.ts and how existing components that read sourdough_recipes would be affected.",
+  "assertions": [
+    {
+      "text": "Correctly targets the Ingredient interface (not RecipeSnapshot or SavedRecipe) as the location to add allergenTags",
+      "type": "correctness"
+    },
+    {
+      "text": "Makes field optional (allergenTags?: string[]) to preserve backward compatibility with existing stored data",
+      "type": "correctness"
+    },
+    {
+      "text": "Correctly names the localStorage key as 'sourdough_recipes' (not 'bakeryos_recipes' or 'recipes')",
+      "type": "string_match"
+    },
+    {
+      "text": "Notes that both flours and ingredients arrays on RecipeSnapshot contain Ingredient objects and would carry the new field",
+      "type": "correctness"
+    }
+  ]
+}

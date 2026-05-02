@@ -1,0 +1,19 @@
+{
+  "eval_id": 2,
+  "eval_name": "low-stock",
+  "prompt": "Build a LowStockAlert component that reads inventory data and returns a count of items below 500g. I want to show a badge number in the sidebar when stock is low.",
+  "assertions": [
+    {
+      "text": "Uses 'sourdough_inventory' as the localStorage key (not 'bakeryos_inventory' — the tricky one since newer convention would suggest bakeryos_ prefix)",
+      "type": "string_match"
+    },
+    {
+      "text": "Uses InventoryItem type with the quantity field (not stock, amount, or other invented field name)",
+      "type": "string_match"
+    },
+    {
+      "text": "Compares quantity directly to 500 without unit conversion (quantity is already stored in grams per the type invariant)",
+      "type": "correctness"
+    }
+  ]
+}

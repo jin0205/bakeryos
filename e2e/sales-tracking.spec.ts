@@ -2,6 +2,46 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sales Tracking', () => {
   test.beforeEach(async ({ page }) => {
+    await page.route('/api/data/**', (route) => {
+      if (route.request().method() === 'PUT') {
+        route.fulfill({ status: 204 });
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ data: [], updatedAt: new Date(0).toISOString() }),
+        });
+      }
+    });
+    await page.route('/api/square/credentials', (route) => {
+      if (route.request().method() === 'PUT') {
+        route.fulfill({ status: 204 });
+      } else {
+        route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            { location_id: 'food1', square_location_id: '', configured: false },
+            { location_id: 'food2', square_location_id: '', configured: false },
+            { location_id: 'bread', square_location_id: '', configured: false },
+          ]),
+        });
+      }
+    });
+    await page.route('/api/square/catalog', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: ['Country Sourdough'] }),
+      });
+    });
+    await page.route('/api/square/sync', (route) => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ last_synced_at: new Date().toISOString(), sales: [], sync_errors: [] }),
+      });
+    });
     await page.addInitScript(() => {
       localStorage.removeItem('bakeryos_distributions');
       localStorage.removeItem('bakeryos_square_credentials');
@@ -87,5 +127,77 @@ test.describe('Sales Tracking', () => {
     await page.getByRole('button', { name: 'Cancel' }).click();
     await expect(page.getByRole('heading', { name: 'Log Distribution' })).not.toBeVisible();
     await expect(page.getByText(/no distributions logged yet/i)).toBeVisible();
+  });
+
+  test('removes legacy Square credentials from localStorage on load', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('bakeryos_square_credentials', JSON.stringify({
+        data: [{ location_id: 'food1', access_token: 'secret-token', square_location_id: 'LOC1' }],
+        updatedAt: new Date().toISOString(),
+      }));
+    });
+    await page.reload();
+    await page.locator('aside').getByRole('button', { name: 'Sales Tracking' }).click();
+    const legacyCredentials = await page.evaluate(() => localStorage.getItem('bakeryos_square_credentials'));
+    expect(legacyCredentials).toBeNull();
+  });
+
+  test('saves Square credentials through Worker without persisting tokens locally', async ({ page }) => {
+    let squareCredentialPayload: unknown = null;
+    await page.route('/api/square/credentials', async (route) => {
+      if (route.request().method() === 'PUT') {
+        squareCredentialPayload = route.request().postDataJSON();
+        await route.fulfill({ status: 204 });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([
+            { location_id: 'food1', square_location_id: '', configured: false },
+            { location_id: 'food2', square_location_id: '', configured: false },
+            { location_id: 'bread', square_location_id: '', configured: false },
+          ]),
+        });
+      }
+    });
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByPlaceholder('EAAAl...').first().fill('secret-square-token');
+    await page.getByPlaceholder('LXXXXXXXXX').first().fill('LOC123');
+    await page.getByRole('button', { name: 'Save Square Credentials' }).click();
+
+    expect(squareCredentialPayload).toEqual({
+      credentials: [
+        { location_id: 'food1', access_token: 'secret-square-token', square_location_id: 'LOC123' },
+        { location_id: 'food2', access_token: '', square_location_id: '' },
+        { location_id: 'bread', access_token: '', square_location_id: '' },
+      ],
+    });
+    const legacyCredentials = await page.evaluate(() => localStorage.getItem('bakeryos_square_credentials'));
+    expect(legacyCredentials).toBeNull();
+  });
+
+  test('fetches catalog through Worker instead of direct Square browser calls', async ({ page }) => {
+    let squareProxyCalled = false;
+    let directSquareCalled = false;
+    await page.route('/api/square/catalog', async (route) => {
+      squareProxyCalled = true;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ items: ['Country Sourdough'] }),
+      });
+    });
+    await page.route('https://connect.squareup.com/**', async (route) => {
+      directSquareCalled = true;
+      await route.abort();
+    });
+
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: 'Fetch Square Catalog' }).click();
+    await expect(page.getByText('Catalog loaded')).toBeVisible();
+
+    expect(squareProxyCalled).toBe(true);
+    expect(directSquareCalled).toBe(false);
   });
 });

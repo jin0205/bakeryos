@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { storageService } from '../services/storageService';
-import { fetchCatalogItemNames, syncAllLocations } from '../services/squareService';
+import { fetchCatalogItemNames, loadSquareCredentialStatuses, saveSquareCredentials, syncAllLocations } from '../services/squareService';
 import type {
-  DistributionEntry, SquareCredential, SquareItemMapping,
+  DistributionEntry, SquareCredential, SquareCredentialStatus, SquareItemMapping,
   SquareSalesCache, SquareLocationId, SavedRecipe,
 } from '../types';
 import { SheetsIcon } from './icons/SheetsIcon';
@@ -15,6 +15,16 @@ const LOCATION_LABELS: Record<SquareLocationId, string> = {
 
 function emptyCredential(location_id: SquareLocationId): SquareCredential {
   return { location_id, access_token: '', square_location_id: '' };
+}
+
+type SquareCredentialForm = SquareCredentialStatus & { access_token: string };
+
+function emptyCredentialForm(location_id: SquareLocationId): SquareCredentialForm {
+  return { location_id, access_token: '', square_location_id: '', configured: false };
+}
+
+function statusToCredentialForm(status: SquareCredentialStatus): SquareCredentialForm {
+  return { ...status, access_token: '' };
 }
 
 // Square integration types use snake_case to match Square API field names directly.
@@ -54,10 +64,9 @@ const SalesTracking: React.FC = () => {
   const [distributions, setDistributions] = useState<DistributionEntry[]>(
     () => storageService.load<DistributionEntry>('bakeryos_distributions'),
   );
-  const [credentials, setCredentials] = useState<SquareCredential[]>(() => {
-    const saved = storageService.load<SquareCredential>('bakeryos_square_credentials');
-    return LOCATIONS.map(loc => saved.find(c => c.location_id === loc) ?? emptyCredential(loc));
-  });
+  const [credentials, setCredentials] = useState<SquareCredentialForm[]>(
+    () => LOCATIONS.map(emptyCredentialForm),
+  );
   const [itemMappings, setItemMappings] = useState<SquareItemMapping[]>(
     () => storageService.load<SquareItemMapping>('bakeryos_square_item_map'),
   );
@@ -70,6 +79,8 @@ const SalesTracking: React.FC = () => {
   const [showLogForm, setShowLogForm] = useState(false);
   const [catalogItems, setCatalogItems] = useState<Partial<Record<SquareLocationId, string[]>>>({});
   const [fetchingCatalog, setFetchingCatalog] = useState(false);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+  const [savingCredentials, setSavingCredentials] = useState(false);
 
   const recipes = useMemo(
     () => storageService.load<SavedRecipe>('bakeryos_recipes'),
@@ -77,9 +88,39 @@ const SalesTracking: React.FC = () => {
   );
   const recipeNames = useMemo(() => recipes.map(r => r.name).sort(), [recipes]);
 
-  const saveCredentials = useCallback((updated: SquareCredential[]) => {
-    setCredentials(updated);
-    storageService.save('bakeryos_square_credentials', updated);
+  useEffect(() => {
+    localStorage.removeItem('bakeryos_square_credentials');
+    let active = true;
+    loadSquareCredentialStatuses().then(statuses => {
+      if (!active) return;
+      setCredentials(LOCATIONS.map(loc => {
+        const status = statuses.find(s => s.location_id === loc);
+        return status ? statusToCredentialForm(status) : emptyCredentialForm(loc);
+      }));
+    });
+    return () => { active = false; };
+  }, []);
+
+  const saveCredentials = useCallback(async (updated: SquareCredentialForm[]) => {
+    setSavingCredentials(true);
+    setCredentialError(null);
+    try {
+      await saveSquareCredentials(updated.map(({ location_id, access_token, square_location_id }) => ({
+        location_id,
+        access_token,
+        square_location_id,
+      })));
+      const statuses = await loadSquareCredentialStatuses();
+      setCredentials(LOCATIONS.map(loc => {
+        const status = statuses.find(s => s.location_id === loc);
+        return status ? statusToCredentialForm(status) : emptyCredentialForm(loc);
+      }));
+    } catch {
+      setCredentialError('Could not save Square credentials. Check your Bakery API token and Worker.');
+    } finally {
+      setSavingCredentials(false);
+      localStorage.removeItem('bakeryos_square_credentials');
+    }
   }, []);
 
   const saveItemMappings = useCallback((updated: SquareItemMapping[]) => {
@@ -88,7 +129,7 @@ const SalesTracking: React.FC = () => {
   }, []);
 
   const handleSync = async () => {
-    const configured = credentials.filter(c => c.access_token && c.square_location_id);
+    const configured = credentials.filter(c => c.configured || (c.access_token && c.square_location_id));
     if (configured.length === 0) return;
     const earliest = distributions.reduce(
       (min, d) => (d.date < min ? d.date : min),
@@ -96,7 +137,7 @@ const SalesTracking: React.FC = () => {
     );
     setSyncing(true);
     try {
-      const cache = await syncAllLocations(configured, itemMappings, earliest);
+      const cache = await syncAllLocations(itemMappings, earliest);
       setSalesCache(cache);
       storageService.save('bakeryos_square_sales_cache', [cache]);
     } finally {
@@ -107,19 +148,10 @@ const SalesTracking: React.FC = () => {
   const handleFetchCatalog = async () => {
     setFetchingCatalog(true);
     try {
-      const results: Partial<Record<SquareLocationId, string[]>> = {};
-      await Promise.all(
-        credentials
-          .filter(c => c.access_token && c.square_location_id)
-          .map(async c => {
-            try {
-              results[c.location_id] = await fetchCatalogItemNames(c);
-            } catch {
-              results[c.location_id] = [];
-            }
-          }),
-      );
-      setCatalogItems(results);
+      const names = await fetchCatalogItemNames();
+      setCatalogItems({ food1: names, food2: [], bread: [] });
+    } catch {
+      setCatalogItems({});
     } finally {
       setFetchingCatalog(false);
     }
@@ -165,7 +197,10 @@ const SalesTracking: React.FC = () => {
       {subTab === 'settings' && (
         <SettingsTab
           credentials={credentials}
+          onChangeCredentials={setCredentials}
           onSaveCredentials={saveCredentials}
+          credentialError={credentialError}
+          savingCredentials={savingCredentials}
           itemMappings={itemMappings}
           onSaveItemMappings={saveItemMappings}
           catalogItems={catalogItems}
@@ -179,8 +214,11 @@ const SalesTracking: React.FC = () => {
 };
 
 interface SettingsTabProps {
-  credentials: SquareCredential[];
-  onSaveCredentials: (c: SquareCredential[]) => void;
+  credentials: SquareCredentialForm[];
+  onChangeCredentials: (c: SquareCredentialForm[]) => void;
+  onSaveCredentials: (c: SquareCredentialForm[]) => void;
+  credentialError: string | null;
+  savingCredentials: boolean;
   itemMappings: SquareItemMapping[];
   onSaveItemMappings: (m: SquareItemMapping[]) => void;
   catalogItems: Partial<Record<SquareLocationId, string[]>>;
@@ -190,7 +228,7 @@ interface SettingsTabProps {
 }
 
 const SettingsTab: React.FC<SettingsTabProps> = ({
-  credentials, onSaveCredentials, itemMappings, onSaveItemMappings,
+  credentials, onChangeCredentials, onSaveCredentials, credentialError, savingCredentials, itemMappings, onSaveItemMappings,
   catalogItems, onFetchCatalog, fetchingCatalog, recipeNames,
 }) => {
   const handleCredentialChange = (
@@ -199,7 +237,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
     value: string,
   ) => {
     const updated = credentials.map((c, i) => (i === idx ? { ...c, [field]: value } : c));
-    onSaveCredentials(updated);
+    onChangeCredentials(updated);
   };
 
   const addMapping = () => {
@@ -219,7 +257,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
 
   const allCatalogNames = useMemo(() => {
     const names = new Set<string>();
-    Object.values(catalogItems).forEach(arr => arr?.forEach(n => names.add(n)));
+    Object.values(catalogItems).forEach((arr: string[] | undefined) => arr?.forEach(n => names.add(n)));
     return Array.from(names).sort();
   }, [catalogItems]);
 
@@ -260,14 +298,24 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs">
-                <span className={`inline-block w-2 h-2 rounded-full ${cred.access_token && cred.square_location_id ? 'bg-green-500' : 'bg-stone-300 dark:bg-stone-600'}`} />
+                <span className={`inline-block w-2 h-2 rounded-full ${(cred.configured || (cred.access_token && cred.square_location_id)) ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-stone-300 dark:bg-stone-600'}`} />
                 <span className="text-stone-500 dark:text-stone-400">
-                  {cred.access_token && cred.square_location_id ? 'Configured' : 'Not configured'}
+                  {cred.configured ? 'Configured' : cred.access_token && cred.square_location_id ? 'Ready to save' : 'Not configured'}
                 </span>
               </div>
             </div>
           ))}
         </div>
+        {credentialError && (
+          <p className="mt-4 text-xs text-red-600 dark:text-red-400">{credentialError}</p>
+        )}
+        <button
+          onClick={() => onSaveCredentials(credentials)}
+          disabled={savingCredentials}
+          className="mt-5 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium disabled:opacity-50"
+        >
+          {savingCredentials ? 'Saving...' : 'Save Square Credentials'}
+        </button>
       </section>
 
       <section className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6">
@@ -283,7 +331,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
         </div>
 
         {Object.keys(catalogItems).length > 0 && (
-          <p className="text-xs text-green-600 dark:text-green-400 mb-3">
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-3">
             Catalog loaded — {allCatalogNames.length} items found
           </p>
         )}
@@ -354,7 +402,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
               <button
                 onClick={() => removeMapping(idx)}
                 aria-label="Remove mapping"
-                className="col-span-1 flex items-center justify-center text-stone-400 hover:text-red-500 transition-colors"
+                className="col-span-1 flex items-center justify-center text-stone-400 hover:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-stone-800 rounded"
               >
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -461,8 +509,8 @@ const LogTab: React.FC<LogTabProps> = ({
                     <span
                       className={`inline-block w-2 h-2 rounded-full ${
                         !salesCache ? 'bg-stone-300 dark:bg-stone-600' :
-                        hasError ? 'bg-red-500' :
-                        hasSales ? 'bg-green-500' : 'bg-amber-400'
+                        hasError ? 'bg-red-500 dark:bg-red-600' :
+                        hasSales ? 'bg-emerald-500 dark:bg-emerald-600' : 'bg-amber-400 dark:bg-amber-500'
                       }`}
                     />
                     {LOCATION_LABELS[loc]}
@@ -529,7 +577,7 @@ const LogTab: React.FC<LogTabProps> = ({
                       {noData ? (
                         <span className="text-stone-300 dark:text-stone-600 text-xs">—</span>
                       ) : (
-                        <span className={remaining! < 0 ? 'text-red-600' : 'text-stone-900 dark:text-stone-100'}>
+                        <span className={remaining! < 0 ? 'text-red-600 dark:text-red-400' : 'text-stone-900 dark:text-stone-100'}>
                           {remaining}
                         </span>
                       )}
@@ -538,7 +586,7 @@ const LogTab: React.FC<LogTabProps> = ({
                       {noData ? (
                         <span className="text-stone-300 dark:text-stone-600 text-xs">—</span>
                       ) : (
-                        <span className={`font-medium ${sellThrough! >= 80 ? 'text-green-600 dark:text-green-400' : sellThrough! >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                        <span className={`font-medium ${sellThrough! >= 80 ? 'text-emerald-600 dark:text-emerald-400' : sellThrough! >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
                           {sellThrough!.toFixed(0)}%
                         </span>
                       )}
@@ -632,7 +680,7 @@ const LogTab: React.FC<LogTabProps> = ({
                 Log Distribution
               </button>
               <button
-                onClick={() => { setShowLogForm(false); setForm(EMPTY_FORM); }}
+                onClick={() => { setShowLogForm(false); setForm(makeEmptyForm()); }}
                 className="px-4 py-2 text-stone-600 dark:text-stone-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors text-sm"
               >
                 Cancel

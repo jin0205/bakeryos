@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json,re; d=json.load(sys.stdin); content=d.get('new_string','') or d.get('content',''); bad=re.search(r'AIza[0-9A-Za-z_-]{35}', content); sys.exit(2) if bad else sys.exit(0)\""
+          },
+          {
+            "type": "command",
+            "command": "echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; f=json.load(sys.stdin).get('file_path',''); sys.exit(2) if 'package-lock.json' in f or 'node_modules' in f else sys.exit(0)\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\"); case \"$f\" in *.ts|*.tsx) npx tsc --noEmit 2>&1 | head -30;; esac"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f .env.local || echo 'WARNING: .env.local missing'"
+          },
+          {
+            "type": "command",
+            "command": "npm install --silent 2>/dev/null"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash '/Users/kevin/sourdough-pro-ai/.codex/hooks/ui-review-on-stop.sh'"
+          }
+        ]
+      }
+    ]
+  }
+}

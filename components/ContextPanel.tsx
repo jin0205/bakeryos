@@ -144,7 +144,7 @@ const ContextPanel: React.FC<ContextPanelProps> = ({ panel, onClose }) => {
               <div>
                 <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2">Ingredient Requirements</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {Object.entries(allReqs).map(([name, w]) => (
+                  {Object.entries(allReqs).map(([name, w]: [string, number]) => (
                     <span key={name} className="text-xs bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 px-2 py-0.5 rounded">
                       {name}: {fmt(w)}
                     </span>
@@ -333,7 +333,7 @@ const ContextPanel: React.FC<ContextPanelProps> = ({ panel, onClose }) => {
 
       {/* Panel */}
       <div
-        className={`fixed top-0 right-0 h-full w-96 bg-white dark:bg-stone-900 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-96 bg-white dark:bg-stone-800 border-l border-stone-200 dark:border-stone-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -344,7 +344,7 @@ const ContextPanel: React.FC<ContextPanelProps> = ({ panel, onClose }) => {
           <button
             onClick={onClose}
             aria-label="Close panel"
-            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-stone-800 transition-colors cursor-pointer"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

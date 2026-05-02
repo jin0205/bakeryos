@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-function mockKV(page: Parameters<Parameters<typeof test>[1]>[0]) {
+function mockKV(page: Page) {
   return page.route('/api/data/**', (route) => {
     if (route.request().method() === 'PUT') {
       route.fulfill({ status: 204 });

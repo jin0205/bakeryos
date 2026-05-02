@@ -137,3 +137,11 @@ npm run dev:worker   # Wrangler on :8787
 ## Available Agents
 - `ui-reviewer` — reviews components for dark mode coverage, Tailwind consistency, and accessibility
   - Trigger: "run the ui-reviewer on [ComponentName]"
+- `worker-security-reviewer` — reviews Worker routes, API boundaries, secrets, tokens, auth, CORS, and KV private/public data separation
+  - Trigger after editing `worker.ts`, `wrangler.jsonc`, `/api/*` services, Square/Anthropic integrations, or token handling
+- `storage-sync-reviewer` — reviews storageService, StorageKey, localStorage envelopes, Worker data keys, pending sync, and persistence tests
+  - Trigger after editing persistence or sync behavior
+- `claude-prompt-reviewer` — reviews Claude prompts and AI service changes for grams, Baker's %, JSON schemas, model choice, and Worker proxy usage
+  - Trigger after editing `services/claudeService.ts` or `/api/messages`
+- `bakery-math-reviewer` — reviews formula scaling, hydration, DDT, levain, inventory deduction, unit conversion, cost, sales quantity, and work order totals
+  - Trigger after editing bakery calculation logic
