@@ -123,6 +123,29 @@ const SalesTracking: React.FC = () => {
     }
   }, []);
 
+  const clearCredential = useCallback(async (location_id: SquareLocationId) => {
+    setSavingCredentials(true);
+    setCredentialError(null);
+    try {
+      await saveSquareCredentials([{
+        location_id,
+        access_token: '',
+        square_location_id: '',
+        clear: true,
+      }]);
+      const statuses = await loadSquareCredentialStatuses();
+      setCredentials(LOCATIONS.map(loc => {
+        const status = statuses.find(s => s.location_id === loc);
+        return status ? statusToCredentialForm(status) : emptyCredentialForm(loc);
+      }));
+    } catch {
+      setCredentialError('Could not clear Square credentials. Check your Bakery API token and Worker.');
+    } finally {
+      setSavingCredentials(false);
+      localStorage.removeItem('bakeryos_square_credentials');
+    }
+  }, []);
+
   const saveItemMappings = useCallback((updated: SquareItemMapping[]) => {
     setItemMappings(updated);
     storageService.save('bakeryos_square_item_map', updated);
@@ -199,6 +222,7 @@ const SalesTracking: React.FC = () => {
           credentials={credentials}
           onChangeCredentials={setCredentials}
           onSaveCredentials={saveCredentials}
+          onClearCredential={clearCredential}
           credentialError={credentialError}
           savingCredentials={savingCredentials}
           itemMappings={itemMappings}
@@ -217,6 +241,7 @@ interface SettingsTabProps {
   credentials: SquareCredentialForm[];
   onChangeCredentials: (c: SquareCredentialForm[]) => void;
   onSaveCredentials: (c: SquareCredentialForm[]) => void;
+  onClearCredential: (location_id: SquareLocationId) => void;
   credentialError: string | null;
   savingCredentials: boolean;
   itemMappings: SquareItemMapping[];
@@ -228,7 +253,7 @@ interface SettingsTabProps {
 }
 
 const SettingsTab: React.FC<SettingsTabProps> = ({
-  credentials, onChangeCredentials, onSaveCredentials, credentialError, savingCredentials, itemMappings, onSaveItemMappings,
+  credentials, onChangeCredentials, onSaveCredentials, onClearCredential, credentialError, savingCredentials, itemMappings, onSaveItemMappings,
   catalogItems, onFetchCatalog, fetchingCatalog, recipeNames,
 }) => {
   const handleCredentialChange = (
@@ -302,6 +327,16 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 <span className="text-stone-500 dark:text-stone-400">
                   {cred.configured ? 'Configured' : cred.access_token && cred.square_location_id ? 'Ready to save' : 'Not configured'}
                 </span>
+                {cred.configured && (
+                  <button
+                    type="button"
+                    onClick={() => onClearCredential(cred.location_id)}
+                    disabled={savingCredentials}
+                    className="ml-auto text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium disabled:opacity-50"
+                  >
+                    Clear saved credential
+                  </button>
+                )}
               </div>
             </div>
           ))}

@@ -92,6 +92,10 @@ export interface SquareCredential {
   square_location_id: string; // Square's internal location ID
 }
 
+export interface SquareCredentialUpdate extends SquareCredential {
+  clear?: boolean;
+}
+
 export interface SquareCredentialStatus {
   location_id: SquareLocationId;
   square_location_id: string;

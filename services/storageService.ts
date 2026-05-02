@@ -12,6 +12,7 @@ const ALL_KEYS: StorageKey[] = [
   'bakeryos_work_orders',
   'bakeryos_distributions',
   'bakeryos_square_item_map',
+  'bakeryos_square_sales_cache',
 ];
 
 const TOKEN = ((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_BAKERY_API_TOKEN) ?? '';
@@ -87,6 +88,7 @@ export function save<T>(key: StorageKey, data: T[]): void {
 
 export async function syncAll(): Promise<void> {
   if (!TOKEN) return;
+  await flushPendingSync();
   await Promise.allSettled(
     ALL_KEYS.map(async (key) => {
       try {

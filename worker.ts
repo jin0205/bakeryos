@@ -6,7 +6,7 @@
  * - Handles GET/PUT /api/data/:key for KV-backed persistent storage
  */
 
-import type { SquareCredential, SquareCredentialStatus, SquareItemMapping, SquareLocationId, SquareSaleEntry, SquareSalesCache } from './types';
+import type { SquareCredential, SquareCredentialStatus, SquareCredentialUpdate, SquareItemMapping, SquareLocationId, SquareSaleEntry, SquareSalesCache } from './types';
 
 export interface Env {
   ASSETS: Fetcher;
@@ -26,6 +26,9 @@ const VALID_DATA_KEYS = [
   'bakeryos_inventory',
   'bakeryos_planner_items',
   'bakeryos_work_orders',
+  'bakeryos_distributions',
+  'bakeryos_square_item_map',
+  'bakeryos_square_sales_cache',
 ] as const;
 
 const SQUARE_CREDENTIALS_KEY = 'private_square_credentials';
@@ -41,6 +44,9 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === '/api/messages' && request.method === 'POST') {
+      if (!isAuthorized(request, env)) {
+        return errorResponse(401, 'Unauthorized');
+      }
       return proxyToAnthropic(request, env);
     }
 
@@ -110,7 +116,7 @@ async function handleSquareRoute(request: Request, env: Env, url: URL): Promise<
     }
 
     if (request.method === 'PUT') {
-      let payload: { credentials?: SquareCredential[] };
+      let payload: { credentials?: SquareCredentialUpdate[] };
       try {
         payload = await request.json();
       } catch {
@@ -192,10 +198,11 @@ async function loadSquareCredentials(env: Env): Promise<SquareCredential[]> {
   }
 }
 
-function mergeSquareCredentials(existing: SquareCredential[], incoming: SquareCredential[]): SquareCredential[] {
+function mergeSquareCredentials(existing: SquareCredential[], incoming: SquareCredentialUpdate[]): SquareCredential[] {
   return SQUARE_LOCATIONS.flatMap(location_id => {
     const next = incoming.find(c => c.location_id === location_id);
     const current = existing.find(c => c.location_id === location_id);
+    if (next?.clear) return [];
     const squareLocationId = next?.square_location_id.trim() || current?.square_location_id || '';
     const accessToken = next?.access_token.trim() || current?.access_token || '';
     if (!squareLocationId || !accessToken) return [];

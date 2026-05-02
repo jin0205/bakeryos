@@ -33,4 +33,5 @@
   ]
   // Secrets (never committed here — set via `wrangler secret put`):
   //   ANTHROPIC_API_KEY
+  //   BAKERY_API_TOKEN
 }

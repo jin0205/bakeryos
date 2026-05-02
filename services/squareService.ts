@@ -1,4 +1,4 @@
-import type { SquareCredential, SquareCredentialStatus, SquareItemMapping, SquareSalesCache } from '../types';
+import type { SquareCredentialStatus, SquareCredentialUpdate, SquareItemMapping, SquareSalesCache } from '../types';
 
 const TOKEN = ((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_BAKERY_API_TOKEN) ?? '';
 
@@ -24,7 +24,7 @@ export async function loadSquareCredentialStatuses(): Promise<SquareCredentialSt
   }
 }
 
-export async function saveSquareCredentials(credentials: SquareCredential[]): Promise<void> {
+export async function saveSquareCredentials(credentials: SquareCredentialUpdate[]): Promise<void> {
   const headers = new Headers({ 'Content-Type': 'application/json' });
   if (TOKEN) headers.set('X-Bakery-Token', TOKEN);
   const res = await fetch('/api/square/credentials', {

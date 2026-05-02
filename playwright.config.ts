@@ -19,7 +19,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'ANTHROPIC_API_KEY=playwright-test PORT=3001 npx vite --port 3001',
+    command: 'ANTHROPIC_API_KEY=playwright-test VITE_BAKERY_API_TOKEN=playwright-token PORT=3001 npx vite --port 3001',
     url: 'http://localhost:3001',
     reuseExistingServer: !process.env.CI,
     timeout: 30000,

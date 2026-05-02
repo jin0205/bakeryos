@@ -24,6 +24,8 @@ type MessageParam = {
   content: string | unknown[];
 };
 
+const TOKEN = ((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_BAKERY_API_TOKEN) ?? '';
+
 // ---------------------------------------------------------------------------
 // Shared normalization prompt fragment (weights must be in grams)
 // ---------------------------------------------------------------------------
@@ -65,9 +67,11 @@ If an ingredient is given in cups, spoons, or milliliters, use these specific de
 // ---------------------------------------------------------------------------
 
 async function callClaude(params: Record<string, unknown>): Promise<AnthropicResponse> {
+  const headers = new Headers({ 'Content-Type': 'application/json' });
+  if (TOKEN) headers.set('X-Bakery-Token', TOKEN);
   const res = await fetch('/api/messages', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(params),
   });
   if (!res.ok) {

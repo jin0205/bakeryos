@@ -27,6 +27,7 @@ R&D. AI features use Anthropic Claude through a Cloudflare Worker API proxy.
 - Tailwind CSS only
 - Cloudflare Workers for deployment and `/api/messages`
 - Anthropic Claude via `services/claudeService.ts` and `worker.ts`
+- `BAKERY_API_TOKEN` / `VITE_BAKERY_API_TOKEN` shared-token auth for Worker `/api/*`
 - localStorage persistence through `services/storageService.ts`
 - Playwright E2E tests in `e2e/`
 
@@ -38,6 +39,7 @@ Do not add Vercel configuration or Google Gemini dependencies.
 npm install
 npm run dev
 npm run build
+npm run typecheck
 npm test
 npm run test:headed
 npm run test:ui
@@ -101,6 +103,7 @@ Playwright starts its own Vite server on port 3001 via `playwright.config.ts`.
 ## Verification
 
 - Run `npm run build` for general code changes.
+- Run `npm run typecheck` after TypeScript or shared type changes.
 - Run focused Playwright tests for affected user flows.
 - Use browser or screenshot verification for meaningful UI changes.
 - Report commands run and any skipped verification in the final response.
@@ -134,7 +137,8 @@ Use project reviewer agents when a change touches their domain:
 
 ## Known Notes
 
-- `README.md` may be stale if it mentions Gemini or `GEMINI_API_KEY`; prefer
-  `CLAUDE.md` and current source files for AI-service truth.
+- Current setup uses Anthropic and Bakery token Worker auth. If a historical
+  plan mentions Gemini, `GEMINI_API_KEY`, direct browser Square calls, or
+  `bakeryos_square_credentials` generic sync, treat it as superseded.
 - Untracked local tooling directories such as `.agents/` and `.codex/` may be
   present. Do not delete them unless asked.

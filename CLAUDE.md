@@ -8,10 +8,12 @@ alwaysApply: true
 ## Quick Start
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...   # required — app throws at load without it
 npm install
+echo "VITE_BAKERY_API_TOKEN=<same-token-as-worker-secret>" > .env.local
 npm run dev        # Vite dev server on port 3000
+npm run dev:worker # Worker dev server on port 8787
 npm run build      # production build
+npm run typecheck  # TypeScript verification
 ```
 
 **E2E tests** (`e2e/` dir, Chromium):
@@ -33,7 +35,7 @@ BakeryOS is a sourdough/artisan bakery ERP web app for commercial baker Kevin. I
 - **React 19** + **TypeScript 5.8** + **Vite 6**
 - **Tailwind CSS** — dark mode via `dark:` prefix; amber/stone color palette
 - **Anthropic Claude** — all AI calls in `services/claudeService.ts` via `fetch` to `/api/messages`
-- **Cloudflare Workers** — `worker.ts` proxies `/api/messages` → Anthropic; `ANTHROPIC_API_KEY` stored as a Cloudflare secret
+- **Cloudflare Workers** — `worker.ts` proxies `/api/messages` → Anthropic; `ANTHROPIC_API_KEY` and `BAKERY_API_TOKEN` stored as Cloudflare secrets
 - **localStorage** — all data persistence (no backend, no database); use `storageService.load<T>(key)` / `storageService.save(key, data)` — not raw `localStorage`. Data is wrapped in a versioned envelope `{ data: T[], updatedAt: string }`.
 - **Playwright** — E2E tests in `e2e/` (navigation, formula library, dark mode)
 
@@ -107,6 +109,7 @@ Deploys to **Cloudflare Workers** (static SPA + API proxy in one Worker):
 ```bash
 # One-time: store the API key as a Cloudflare secret
 wrangler secret put ANTHROPIC_API_KEY
+wrangler secret put BAKERY_API_TOKEN
 
 # Deploy
 npm run deploy   # vite build && wrangler deploy
@@ -120,12 +123,13 @@ npm run dev:worker   # Wrangler on :8787
 
 ## AI Service
 - AI backend uses **Anthropic Claude SDK** (not Google Gemini)
-- Environment variable: `ANTHROPIC_API_KEY` in `.env.local`
+- Worker secret: `ANTHROPIC_API_KEY`
+- Worker/browser shared auth token: `BAKERY_API_TOKEN` in Cloudflare and matching `VITE_BAKERY_API_TOKEN` in `.env.local`
 - Do not reference or add `@google/genai` dependencies
 
 ## Development Workflow
 - Always run `npm run dev` after making dependency or environment variable changes to verify the app loads without blank pages or missing module errors.
-- Always verify `.env.local` exists with required API keys before starting dev server
+- Always verify `.env.local` exists with `VITE_BAKERY_API_TOKEN` before starting dev server
 - Check that all dependencies are installed (`npm install`) before launching
 
 ## Git & Dependencies
