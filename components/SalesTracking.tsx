@@ -281,7 +281,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                     value={cred.access_token}
                     onChange={e => handleCredentialChange(idx, 'access_token', e.target.value)}
                     placeholder="EAAAl..."
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                   />
                 </div>
                 <div>
@@ -293,7 +293,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                     value={cred.square_location_id}
                     onChange={e => handleCredentialChange(idx, 'square_location_id', e.target.value)}
                     placeholder="LXXXXXXXXX"
-                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                   />
                 </div>
               </div>
@@ -357,7 +357,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 <select
                   value={mapping.square_item_name}
                   onChange={e => updateMapping(idx, 'square_item_name', e.target.value)}
-                  className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                 >
                   <option value="">Select item…</option>
                   {allCatalogNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -368,14 +368,14 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                   value={mapping.square_item_name}
                   onChange={e => updateMapping(idx, 'square_item_name', e.target.value)}
                   placeholder="Square item name"
-                  className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                 />
               )}
 
               <select
                 value={mapping.bread_item_name}
                 onChange={e => updateMapping(idx, 'bread_item_name', e.target.value)}
-                className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="col-span-4 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               >
                 <option value="">Select bread…</option>
                 {recipeNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -386,13 +386,13 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 min={1}
                 value={mapping.units_per_sale}
                 onChange={e => updateMapping(idx, 'units_per_sale', parseInt(e.target.value, 10) || 1)}
-                className="col-span-2 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="col-span-2 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               />
 
               <select
                 value={mapping.location_id}
                 onChange={e => updateMapping(idx, 'location_id', e.target.value as SquareLocationId)}
-                className="col-span-1 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="col-span-1 px-2 py-1.5 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               >
                 {LOCATIONS.map(loc => (
                   <option key={loc} value={loc}>{LOCATION_LABELS[loc]}</option>
@@ -610,7 +610,7 @@ const LogTab: React.FC<LogTabProps> = ({
                 type="date"
                 value={form.date}
                 onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               />
             </div>
 
@@ -619,7 +619,7 @@ const LogTab: React.FC<LogTabProps> = ({
               <select
                 value={form.location}
                 onChange={e => setForm(f => ({ ...f, location: e.target.value as SquareLocationId }))}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               >
                 {LOCATIONS.map(loc => (
                   <option key={loc} value={loc}>{LOCATION_LABELS[loc]}</option>
@@ -633,7 +633,7 @@ const LogTab: React.FC<LogTabProps> = ({
                 <select
                   value={form.item_name}
                   onChange={e => setForm(f => ({ ...f, item_name: e.target.value }))}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                 >
                   <option value="">Select bread item…</option>
                   {recipeNames.map(n => <option key={n} value={n}>{n}</option>)}
@@ -644,7 +644,7 @@ const LogTab: React.FC<LogTabProps> = ({
                   value={form.item_name}
                   onChange={e => setForm(f => ({ ...f, item_name: e.target.value }))}
                   placeholder="e.g. Country Sourdough"
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
                 />
               )}
             </div>
@@ -656,7 +656,7 @@ const LogTab: React.FC<LogTabProps> = ({
                 min={1}
                 value={form.quantity_distributed}
                 onChange={e => setForm(f => ({ ...f, quantity_distributed: parseInt(e.target.value, 10) || 1 }))}
-                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               />
             </div>
 
@@ -667,7 +667,7 @@ const LogTab: React.FC<LogTabProps> = ({
                 value={form.notes}
                 onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
                 placeholder="e.g. Saturday farmers market"
-                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
+                className="w-full px-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-900 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 dark:focus:ring-offset-stone-800"
               />
             </div>
 
