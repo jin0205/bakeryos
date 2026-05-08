@@ -1,0 +1,28 @@
+{
+  "eval_id": 0,
+  "eval_name": "sales-tracker",
+  "configuration": "with_skill",
+  "expectations": [
+    {
+      "text": "Uses correct localStorage key 'bakeryos_work_orders' (not 'sourdough_work_orders', 'work_orders', or any other variant)",
+      "passed": true,
+      "evidence": "Response explicitly uses localStorage.getItem('bakeryos_work_orders') and states 'Key is bakeryos_work_orders (modern prefix)'"
+    },
+    {
+      "text": "Filters work orders by status === 'complete' (not 'completed' or 'done')",
+      "passed": true,
+      "evidence": "Response states 'filter for complete' and uses status: WorkOrderStatus with the value 'complete'"
+    },
+    {
+      "text": "Groups or sums using lineItems[].recipeName to identify recipe (not a made-up top-level recipeName field on WorkOrder)",
+      "passed": true,
+      "evidence": "Response correctly notes 'li.recipeName' from WorkOrderLineItem and accumulates into Map keyed by li.recipeName"
+    },
+    {
+      "text": "References estimatedCost field on WorkOrder (not revenue or totalCost)",
+      "passed": true,
+      "evidence": "Response references 'estimatedCost: number — WorkOrder-level total cost' and uses wo.estimatedCost in aggregation"
+    }
+  ],
+  "pass_rate": 1.0
+}

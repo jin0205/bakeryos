@@ -92,6 +92,16 @@ export interface SquareCredential {
   square_location_id: string; // Square's internal location ID
 }
 
+export interface SquareCredentialUpdate extends SquareCredential {
+  clear?: boolean;
+}
+
+export interface SquareCredentialStatus {
+  location_id: SquareLocationId;
+  square_location_id: string;
+  configured: boolean;
+}
+
 export interface SquareItemMapping {
   square_item_name: string;
   bread_item_name: string;
@@ -118,6 +128,5 @@ export type StorageKey =
   | 'bakeryos_planner_items'
   | 'bakeryos_work_orders'
   | 'bakeryos_distributions'
-  | 'bakeryos_square_credentials'
   | 'bakeryos_square_item_map'
   | 'bakeryos_square_sales_cache';

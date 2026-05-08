@@ -1,0 +1,24 @@
+{
+  "eval_id": 2,
+  "eval_name": "low-stock",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Uses 'sourdough_inventory' as the localStorage key (not 'bakeryos_inventory' — the tricky one since newer convention would suggest bakeryos_ prefix)",
+      "passed": true,
+      "evidence": "Uses localStorage.getItem('sourdough_inventory') — agent read InventoryManagement.tsx source file and found the key. States 'not the bakeryos_ prefix used by theme/work-orders'"
+    },
+    {
+      "text": "Uses InventoryItem type with the quantity field (not stock, amount, or other invented field name)",
+      "passed": true,
+      "evidence": "Uses InventoryItem type and item.quantity field correctly"
+    },
+    {
+      "text": "Compares quantity directly to 500 without unit conversion (quantity is already in grams)",
+      "passed": true,
+      "evidence": "Uses item.quantity < LOW_STOCK_THRESHOLD_GRAMS (500) with note 'No unit conversion is needed — compare directly against 500'"
+    }
+  ],
+  "pass_rate": 1.0,
+  "notes": "Agent compensated by reading InventoryManagement.tsx source to discover the sourdough_inventory key. Would have likely guessed bakeryos_inventory without that file read."
+}

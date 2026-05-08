@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:worker": "node scripts/dev-worker.mjs",
     "build": "vite build",
+    "typecheck": "tsc --noEmit",
     "deploy": "vite build && wrangler deploy",
     "preview": "vite preview",
     "test": "playwright test",

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 // Force light mode before each test by navigating, setting localStorage, then reloading
 test.beforeEach(async ({ page }) => {

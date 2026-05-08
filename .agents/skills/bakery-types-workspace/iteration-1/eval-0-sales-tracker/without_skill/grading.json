@@ -1,0 +1,29 @@
+{
+  "eval_id": 0,
+  "eval_name": "sales-tracker",
+  "configuration": "without_skill",
+  "expectations": [
+    {
+      "text": "Uses correct localStorage key 'bakeryos_work_orders' (not 'sourdough_work_orders', 'work_orders', or any other variant)",
+      "passed": true,
+      "evidence": "Agent read WorkOrders.tsx source file directly and found the key. States 'Confirmed at lines 26 and 37 of components/WorkOrders.tsx'"
+    },
+    {
+      "text": "Filters work orders by status === 'complete' (not 'completed' or 'done')",
+      "passed": true,
+      "evidence": "Uses wo.status !== 'complete' and filters to 'complete' status explicitly"
+    },
+    {
+      "text": "Groups or sums using lineItems[].recipeName to identify recipe (not a made-up top-level recipeName field on WorkOrder)",
+      "passed": true,
+      "evidence": "Uses wo.lineItems.forEach(li => ...) with li.recipeName as the map key"
+    },
+    {
+      "text": "References estimatedCost field on WorkOrder (not revenue or totalCost)",
+      "passed": true,
+      "evidence": "Uses wo.estimatedCost throughout, with field confirmed from source file read"
+    }
+  ],
+  "pass_rate": 1.0,
+  "notes": "Agent compensated by reading WorkOrders.tsx source file directly. Used 32k tokens vs 23k for with_skill."
+}

@@ -1,20 +1,76 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# BakeryOS
 
-# Run and deploy your AI Studio app
+BakeryOS is a sourdough and artisan bakery operations app. It manages formulas,
+production planning, inventory, costing, sales tracking, and R&D workflows.
 
-This contains everything you need to run your app locally.
+The app is a React/Vite SPA served by a Cloudflare Worker. Private API keys stay
+in the Worker; the browser calls authenticated `/api/*` routes with a Bakery API
+token.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1yW-2SWjENQhIId29XIjJTUTMexVbzBLq
+## Prerequisites
 
-## Run Locally
+- Node.js
+- npm
+- Wrangler CLI access to the target Cloudflare account
 
-**Prerequisites:**  Node.js
+## Install
 
+```bash
+npm install
+```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Local Development
+
+Create `.env.local` for browser-visible local settings:
+
+```bash
+VITE_BAKERY_API_TOKEN=<same-strong-token-used-for-BAKERY_API_TOKEN>
+```
+
+Start the frontend and Worker in two terminals:
+
+```bash
+npm run dev
+npm run dev:worker
+```
+
+The Vite frontend runs on `http://localhost:3000` and proxies `/api/*` to the
+Worker dev server on `http://localhost:8787`.
+
+## Cloudflare Secrets
+
+Set these as Worker secrets; do not commit their values:
+
+```bash
+wrangler secret put ANTHROPIC_API_KEY
+wrangler secret put BAKERY_API_TOKEN
+```
+
+`ANTHROPIC_API_KEY` is used only by the Worker when proxying `/api/messages`.
+`BAKERY_API_TOKEN` protects `/api/messages`, `/api/data/*`, and `/api/square/*`.
+The frontend sends the matching `VITE_BAKERY_API_TOKEN` as `X-Bakery-Token`.
+
+## Verification
+
+```bash
+npm run build
+npm run typecheck
+npm test
+npm audit --audit-level=moderate
+```
+
+## Deploy
+
+```bash
+npm run deploy
+```
+
+## Notes
+
+- AI features use Anthropic Claude through `worker.ts`; this project does not
+  use Gemini or `GEMINI_API_KEY`.
+- Square access tokens are stored only behind Worker `/api/square/credentials`,
+  not in browser localStorage or generic `/api/data/*` sync.
+- Historical plans under `docs/superpowers/` may describe superseded approaches,
+  including direct browser Square API calls. Prefer current source and this
+  README for setup guidance.
