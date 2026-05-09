@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-09T00:00:00.000Z",
+  "title": "Design System: BakeryOS",
+  "extensions": {
+    "colorMeta": {
+      "amber-action": {
+        "role": "primary",
+        "displayName": "Amber Action",
+        "canonical": "#d97706",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fde68a", "#fef3c7"]
+      },
+      "amber-hover": {
+        "role": "primary",
+        "displayName": "Amber Hover",
+        "canonical": "#b45309",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fde68a", "#fef3c7"]
+      },
+      "amber-signal": {
+        "role": "primary",
+        "displayName": "Amber Signal",
+        "canonical": "#f59e0b",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fde68a", "#fef3c7"]
+      },
+      "amber-tint": {
+        "role": "primary",
+        "displayName": "Amber Tint",
+        "canonical": "#fef3c7",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fde68a", "#fef3c7"]
+      },
+      "stone-ink": {
+        "role": "neutral",
+        "displayName": "Stone Ink",
+        "canonical": "#1c1917",
+        "tonalRamp": ["#0c0a09", "#1c1917", "#292524", "#44403c", "#78716c", "#a8a29e", "#e7e5e4", "#fafaf9"]
+      },
+      "stone-text": {
+        "role": "neutral",
+        "displayName": "Stone Text",
+        "canonical": "#57534e",
+        "tonalRamp": ["#0c0a09", "#1c1917", "#292524", "#44403c", "#57534e", "#a8a29e", "#e7e5e4", "#fafaf9"]
+      },
+      "stone-muted": {
+        "role": "neutral",
+        "displayName": "Stone Muted",
+        "canonical": "#a8a29e",
+        "tonalRamp": ["#0c0a09", "#1c1917", "#292524", "#44403c", "#78716c", "#a8a29e", "#e7e5e4", "#fafaf9"]
+      },
+      "stone-border": {
+        "role": "neutral",
+        "displayName": "Stone Border",
+        "canonical": "#e7e5e4",
+        "tonalRamp": ["#0c0a09", "#1c1917", "#292524", "#44403c", "#78716c", "#a8a29e", "#e7e5e4", "#fafaf9"]
+      },
+      "amoled-bg": {
+        "role": "neutral",
+        "displayName": "True Black",
+        "canonical": "#000000",
+        "tonalRamp": ["#000000", "#0a0a0a", "#111111", "#1a1a1a", "#262626", "#404040", "#737373", "#d4d4d4"]
+      },
+      "state-success": {
+        "role": "semantic",
+        "displayName": "Mill Green",
+        "canonical": "#15803d",
+        "tonalRamp": ["#052e16", "#14532d", "#166534", "#15803d", "#16a34a", "#22c55e", "#86efac", "#dcfce7"]
+      },
+      "state-danger": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "canonical": "#b91c1c",
+        "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#fca5a5", "#fee2e2"]
+      }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "KPI values and batch totals. Large and unambiguous." },
+      "headline": { "displayName": "Headline", "purpose": "Page-level headings and major section titles." },
+      "title":    { "displayName": "Title",    "purpose": "Card headers and subsection titles." },
+      "body":     { "displayName": "Body",     "purpose": "All content text." },
+      "label":    { "displayName": "Label",    "purpose": "Section category markers in 10px uppercase font-black." },
+      "mono":     { "displayName": "Mono",     "purpose": "Work order IDs, weights, yields, and calculated values." }
+    },
+    "shadows": [
+      {
+        "name": "resting-card",
+        "value": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+        "purpose": "Cards and panels at rest. Barely perceptible lift."
+      },
+      {
+        "name": "hover-card",
+        "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+        "purpose": "Interactive cards on hover. Confirms interactivity, not decoration."
+      }
+    ],
+    "motion": [
+      {
+        "name": "transition-colors",
+        "value": "background-color 150ms ease, color 150ms ease, border-color 150ms ease",
+        "purpose": "Default state transition for buttons, nav items, rows."
+      },
+      {
+        "name": "transition-shadow",
+        "value": "box-shadow 150ms ease",
+        "purpose": "Card hover elevation change."
+      }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary CTA. One per view. Amber-action background.",
+      "html": "<button class=\"ds-btn-primary\">+ New Work Order</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; background-color: #d97706; color: #ffffff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.25; cursor: pointer; transition: background-color 150ms ease; } .ds-btn-primary:hover { background-color: #b45309; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #f59e0b; } @media (prefers-reduced-motion: reduce) { .ds-btn-primary { transition: none; } }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action. Transparent with stone border. Used alongside a primary CTA.",
+      "html": "<button class=\"ds-btn-ghost\">Browse Formulas</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; background-color: transparent; color: #57534e; border: 1px solid #e7e5e4; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.25; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; } .ds-btn-ghost:hover { background-color: #fafaf9; color: #1c1917; } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px #f59e0b; } @media (prefers-reduced-motion: reduce) { .ds-btn-ghost { transition: none; } }"
+    },
+    {
+      "name": "Nav Item (Active)",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Sidebar navigation item in active state. Amber-tint background, amber-hover text.",
+      "html": "<button class=\"ds-nav-item ds-nav-item--active\"><svg class=\"ds-nav-icon\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2\" /></svg>Formula Library</button>",
+      "css": ".ds-nav-item { display: flex; align-items: center; width: 100%; padding: 12px 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; font-family: ui-sans-serif, system-ui, sans-serif; cursor: pointer; transition: background-color 150ms ease, color 150ms ease; background-color: transparent; color: #57534e; } .ds-nav-item:hover { background-color: #fafaf9; color: #1c1917; } .ds-nav-item--active { background-color: #fef3c7; color: #b45309; } .ds-nav-icon { width: 20px; height: 20px; margin-right: 12px; flex-shrink: 0; color: #a8a29e; } .ds-nav-item--active .ds-nav-icon { color: #f59e0b; } @media (prefers-reduced-motion: reduce) { .ds-nav-item { transition: none; } }"
+    },
+    {
+      "name": "Card with Header",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Standard section panel. White surface, 12px radius, resting shadow, stone border.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-card-header\">Today's Schedule</div><div class=\"ds-card-body\">Card content goes here.</div></div>",
+      "css": ".ds-card { background-color: #ffffff; border: 1px solid #e7e5e4; border-radius: 12px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); overflow: hidden; } .ds-card-header { padding: 16px 20px; border-bottom: 1px solid #f5f5f4; font-size: 14px; font-weight: 700; color: #1c1917; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-card-body { padding: 20px; font-size: 14px; color: #57534e; font-family: ui-sans-serif, system-ui, sans-serif; line-height: 1.6; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Text input with leading search icon. Focus ring in amber-signal.",
+      "html": "<div class=\"ds-input-wrap\"><svg class=\"ds-input-icon\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\" /></svg><input class=\"ds-input-search\" type=\"text\" placeholder=\"Search formulas…\" /></div>",
+      "css": ".ds-input-wrap { position: relative; display: inline-block; width: 100%; max-width: 320px; } .ds-input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: #a8a29e; pointer-events: none; } .ds-input-search { display: block; width: 100%; padding: 8px 12px 8px 36px; background-color: #ffffff; border: 1px solid #e7e5e4; border-radius: 6px; font-size: 14px; font-family: ui-sans-serif, system-ui, sans-serif; color: #1c1917; box-sizing: border-box; transition: border-color 150ms ease, box-shadow 150ms ease; } .ds-input-search::placeholder { color: #a8a29e; } .ds-input-search:focus { outline: none; border-color: #f59e0b; box-shadow: 0 0 0 2px #f59e0b; } @media (prefers-reduced-motion: reduce) { .ds-input-search { transition: none; } }"
+    },
+    {
+      "name": "Status Badges",
+      "kind": "chip",
+      "refersTo": "badge-status",
+      "description": "Inline status indicator. Always paired with a text label — color alone is not sufficient.",
+      "html": "<div style=\"display:flex;gap:8px;flex-wrap:wrap;\"><span class=\"ds-badge ds-badge--in-production\">In Production</span><span class=\"ds-badge ds-badge--scheduled\">Scheduled</span><span class=\"ds-badge ds-badge--complete\">Complete</span><span class=\"ds-badge ds-badge--draft\">Draft</span></div>",
+      "css": ".ds-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: ui-sans-serif, system-ui, sans-serif; } .ds-badge--in-production { background-color: #fef3c7; color: #b45309; } .ds-badge--scheduled { background-color: #dbeafe; color: #1d4ed8; } .ds-badge--complete { background-color: #d1fae5; color: #065f46; } .ds-badge--draft { background-color: #f5f5f4; color: #57534e; }"
+    },
+    {
+      "name": "KPI Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Interactive summary card. Border shifts to amber when metric is active or alert-relevant. Shadow lifts on hover; no size change.",
+      "html": "<button class=\"ds-kpi-card\"><p class=\"ds-kpi-label\">Active Work Orders</p><p class=\"ds-kpi-value\">3</p><p class=\"ds-kpi-sub\">2 in production</p></button>",
+      "css": ".ds-kpi-card { display: flex; flex-direction: column; align-items: flex-start; padding: 20px; background-color: #ffffff; border: 1px solid #fde68a; border-radius: 12px; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); cursor: pointer; text-align: left; width: 100%; font-family: ui-sans-serif, system-ui, sans-serif; transition: box-shadow 150ms ease; } .ds-kpi-card:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); } .ds-kpi-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a29e; margin: 0 0 8px; } .ds-kpi-value { font-size: 30px; font-weight: 900; color: #d97706; margin: 0 0 4px; line-height: 1.1; } .ds-kpi-sub { font-size: 12px; color: #a8a29e; margin: 0; } @media (prefers-reduced-motion: reduce) { .ds-kpi-card { transition: none; } }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "10px font-black uppercase region marker. Names sections of the interface, not data points.",
+      "html": "<p class=\"ds-section-label\">Quick Actions</p>",
+      "css": ".ds-section-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; color: #a8a29e; margin: 0 0 12px; font-family: ui-sans-serif, system-ui, sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Millstone",
+    "overview": "A millstone does not decorate grain; it transforms it through weight and exactness. BakeryOS applies the same logic to bakery operations. The interface holds shift starts, batch weights, inventory states, and cost margins without ornamentation. Every design choice is structural: it either makes the next action faster or it does not belong.\n\nThe system runs in two modes. Light is a warm-professional workspace: amber-parchment application background against white card surfaces, stone-ink text, amber accent reserved for active states and primary actions. The warmth is calibrated enough to distinguish this from a generic SaaS tool, without cosplaying a bakery aesthetic. AMOLED is true black with amber signal, for OLED hardware or low-light production environments where every wasted photon is noise.\n\nThe design explicitly refuses: generic SaaS metric dashboards, AI-aesthetic soft shadows and gradient text, template-heavy layouts trading density for polish, decorative filler where operational data belongs, and warm-honey color schemes that obscure the professional character of the tool.",
+    "keyCharacteristics": [
+      "Flat by default: tonal layering communicates depth; shadows signal state change only",
+      "Amber restraint: the accent appears on active elements and primary actions, nowhere decorative",
+      "System font only: hierarchy built through weight contrast (400 / 700 / 900)",
+      "Two operating modes: light (warm-professional) and AMOLED (true black)",
+      "Dense and legible: information-forward layouts; the next action is always obvious"
+    ],
+    "rules": [
+      {
+        "name": "The Amber Restraint Rule",
+        "body": "Amber appears on interactive elements, active states, and critical data. It does not appear on decorative borders, background washes, or anywhere the intent is warmth rather than signal.",
+        "section": "colors"
+      },
+      {
+        "name": "The No-Pure-Extremes Rule",
+        "body": "Light mode primary text is stone-ink (#1c1917), not #000. AMOLED backgrounds are an intentional exception — the background IS black; text stays near-white.",
+        "section": "colors"
+      },
+      {
+        "name": "The Weight Contrast Rule",
+        "body": "Adjacent text elements at the same size require at least 200 weight difference to register as a hierarchy step. 400 to 700, or 700 to 900. Never 500 to 600.",
+        "section": "typography"
+      },
+      {
+        "name": "The Label Protocol",
+        "body": "The 10px uppercase font-black label names a region of the interface, not a data point. Not a substitute for small body text or fine print.",
+        "section": "typography"
+      },
+      {
+        "name": "The State-Only Shadow Rule",
+        "body": "A shadow that does not change on hover or focus is decoration. Apply shadows only when tonal layering cannot convey depth, or as a response to interactive state.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use amber exclusively as signal: active states, primary CTAs, critical data, focus rings.",
+      "Do use stone-ink (#1c1917) for primary text in light mode, never #000.",
+      "Do reserve the 10px font-black uppercase label style for region names only.",
+      "Do keep AMOLED backgrounds at true black (#000000).",
+      "Do pair shadow-sm at rest with shadow-md on hover for interactive cards.",
+      "Do use font-mono font-bold for all weights, IDs, quantities, and calculated numerical values.",
+      "Do hold to the radius scale: 8px buttons/nav, 12px cards, 6px inputs/badges.",
+      "Do use tonal layering (stone-ground, stone-surface, white) before reaching for borders or shadows."
+    ],
+    "donts": [
+      "Don't use gradient text, glassmorphism, hero-metric templates, or identical icon-heading-text card grids.",
+      "Don't build generic SaaS dashboards or add decorative filler where operational data belongs.",
+      "Don't put amber on decorative borders, background washes, or anywhere its intent is warmth rather than signal.",
+      "Don't use font weights between 400 and 700. The system has three: 400, 700, 900.",
+      "Don't use border-left or border-right > 1px as a colored stripe on any element. The system has no exceptions; sidebar sub-navigation indents through margin alone.",
+      "Don't use scale transforms on hover. Visual feedback comes through shadow lift and color change, never size change. The Millstone does not bounce when you look at it.",
+      "Don't nest cards inside cards. Two surface levels per view maximum.",
+      "Don't add shadows to static, non-interactive elements.",
+      "Don't apply a bakery-themed visual aesthetic: rustic textures, illustration, wheat motifs, serif display fonts.",
+      "Don't animate CSS layout properties. Transitions use background-color, box-shadow, and color only.",
+      "Don't ship motion without prefers-reduced-motion support."
+    ]
+  }
+}

@@ -91,10 +91,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
           <button
             key={card.label}
             onClick={card.onClick}
-            className={`bg-white dark:bg-stone-900/60 rounded-xl border ${card.border} p-5 shadow-sm text-left hover:shadow-md transition-shadow cursor-pointer group`}
+            className={`bg-white dark:bg-stone-900/60 rounded-xl border ${card.border} p-5 shadow-sm text-left hover:shadow-md transition-shadow cursor-pointer`}
           >
             <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2">{card.label}</p>
-            <p className={`text-3xl font-black ${card.accent} mb-1 group-hover:scale-105 transition-transform`}>{card.value}</p>
+            <p className={`text-3xl font-black ${card.accent} mb-1`}>{card.value}</p>
             <p className="text-xs text-stone-400 dark:text-stone-500">{card.sub}</p>
           </button>
         ))}

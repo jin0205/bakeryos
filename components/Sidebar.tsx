@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Production sub-navigation */}
         {activeTab === 'production' && (
-          <div className="ml-3 pl-3 border-l-2 border-amber-200 dark:border-amber-800/40 space-y-0.5 pt-1">
+          <div className="ml-7 space-y-0.5 pt-1">
             {productionSubItems.map(({ id, label, Icon }) => (
               <button
                 key={id}
@@ -105,7 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Baking Lab sub-navigation */}
         {activeTab === 'lab' && (
-          <div className="ml-3 pl-3 border-l-2 border-amber-200 dark:border-amber-800/40 space-y-0.5 pt-1">
+          <div className="ml-7 space-y-0.5 pt-1">
             {labSubItems.map(({ id, label, Icon }) => (
               <button
                 key={id}
