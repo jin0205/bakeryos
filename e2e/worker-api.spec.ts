@@ -22,6 +22,42 @@ function apiRequest(path: string, init: RequestInit = {}): Request {
 }
 
 test.describe('Worker API security boundaries', () => {
+  test('adds browser security headers to static asset responses', async () => {
+    const env = makeEnv();
+
+    const res = await worker.fetch(apiRequest('/'), env as never);
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Strict-Transport-Security')).toContain('max-age=');
+    expect(res.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
+    expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(res.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
+    expect(res.headers.get('Permissions-Policy')).toContain('geolocation=()');
+  });
+
+  test('adds browser security headers to API responses and preflight', async () => {
+    const env = makeEnv();
+
+    const api = await worker.fetch(apiRequest('/api/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: [] }),
+    }), env as never);
+    const preflight = await worker.fetch(apiRequest('/api/messages', {
+      method: 'OPTIONS',
+    }), env as never);
+
+    for (const res of [api, preflight]) {
+      expect(res.headers.get('Strict-Transport-Security')).toContain('max-age=');
+      expect(res.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
+      expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+      expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+      expect(res.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
+      expect(res.headers.get('Permissions-Policy')).toContain('geolocation=()');
+    }
+  });
+
   test('rejects unauthenticated AI proxy calls before Anthropic fetch', async () => {
     const env = makeEnv();
     let upstreamCalled = false;
