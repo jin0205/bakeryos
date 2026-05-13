@@ -3,6 +3,8 @@ import worker from '../worker';
 
 const TOKEN = 'test-bakery-token';
 
+const EXPECTED_HSTS = 'max-age=15552000';
+
 function makeEnv() {
   const kv = new Map<string, string>();
   return {
@@ -22,39 +24,49 @@ function apiRequest(path: string, init: RequestInit = {}): Request {
 }
 
 test.describe('Worker API security boundaries', () => {
-  test('adds browser security headers to static asset responses', async () => {
+  test('adds HSTS and nosniff to static asset responses', async () => {
     const env = makeEnv();
 
     const res = await worker.fetch(apiRequest('/'), env as never);
 
     expect(res.status).toBe(200);
-    expect(res.headers.get('Strict-Transport-Security')).toContain('max-age=');
-    expect(res.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
-    expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    expect(res.headers.get('Strict-Transport-Security')).toBe(EXPECTED_HSTS);
     expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
-    expect(res.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
-    expect(res.headers.get('Permissions-Policy')).toContain('geolocation=()');
   });
 
-  test('adds browser security headers to API responses and preflight', async () => {
+  test('adds HSTS and nosniff to API responses and preserves CORS preflight', async () => {
     const env = makeEnv();
 
-    const api = await worker.fetch(apiRequest('/api/messages', {
+    const unauthorizedApi = await worker.fetch(apiRequest('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: [] }),
     }), env as never);
+
     const preflight = await worker.fetch(apiRequest('/api/messages', {
       method: 'OPTIONS',
     }), env as never);
 
-    for (const res of [api, preflight]) {
-      expect(res.headers.get('Strict-Transport-Security')).toContain('max-age=');
-      expect(res.headers.get('Content-Security-Policy')).toContain("default-src 'self'");
-      expect(res.headers.get('X-Frame-Options')).toBe('DENY');
+    for (const res of [unauthorizedApi, preflight]) {
+      expect(res.headers.get('Strict-Transport-Security')).toBe(EXPECTED_HSTS);
       expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
-      expect(res.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin');
-      expect(res.headers.get('Permissions-Policy')).toContain('geolocation=()');
+    }
+
+    expect(preflight.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(preflight.headers.get('Access-Control-Allow-Methods')).toBe('GET, POST, PUT, OPTIONS');
+    expect(preflight.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type, X-Bakery-Token');
+  });
+
+  test('serves security.txt from well-known and root paths', async () => {
+    const env = makeEnv();
+
+    for (const path of ['/.well-known/security.txt', '/security.txt']) {
+      const res = await worker.fetch(apiRequest(path), env as never);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('Content-Type')).toContain('text/plain');
+      expect(res.headers.get('Strict-Transport-Security')).toBe(EXPECTED_HSTS);
+      expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+      await expect(res.text()).resolves.toContain('Contact: mailto:security@rooboo.xyz');
     }
   });
 

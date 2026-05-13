@@ -21,6 +21,18 @@ const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Headers': 'Content-Type, X-Bakery-Token',
 };
 
+const SECURITY_HEADERS: Record<string, string> = {
+  'Strict-Transport-Security': 'max-age=15552000',
+  'X-Content-Type-Options': 'nosniff',
+};
+
+const SECURITY_TXT = [
+  'Contact: mailto:security@rooboo.xyz',
+  'Expires: 2026-11-09T00:00:00Z',
+  'Preferred-Languages: en',
+  'Canonical: https://rooboo.xyz/.well-known/security.txt',
+].join('\n') + '\n';
+
 const VALID_DATA_KEYS = [
   'bakeryos_recipes',
   'bakeryos_inventory',
@@ -38,10 +50,14 @@ const SQUARE_LOCATIONS: SquareLocationId[] = ['food1', 'food2', 'bread'];
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: secureHeaders(CORS_HEADERS) });
     }
 
     const url = new URL(request.url);
+
+    if (request.method === 'GET' && (url.pathname === '/.well-known/security.txt' || url.pathname === '/security.txt')) {
+      return securityTxtResponse();
+    }
 
     if (url.pathname === '/api/messages' && request.method === 'POST') {
       if (!isAuthorized(request, env)) {
@@ -58,7 +74,7 @@ export default {
       return handleSquareRoute(request, env, url);
     }
 
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 } satisfies ExportedHandler<Env>;
 
@@ -77,7 +93,7 @@ async function handleDataRoute(request: Request, env: Env, url: URL): Promise<Re
     const body = value ?? JSON.stringify({ data: [], updatedAt: new Date(0).toISOString() });
     return new Response(body, {
       status: 200,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: secureHeaders({ 'Content-Type': 'application/json', ...CORS_HEADERS }),
     });
   }
 
@@ -90,7 +106,7 @@ async function handleDataRoute(request: Request, env: Env, url: URL): Promise<Re
       return errorResponse(400, 'Invalid JSON body');
     }
     await env.BAKERY_DATA.put(key, body);
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
+    return new Response(null, { status: 204, headers: secureHeaders(CORS_HEADERS) });
   }
 
   return errorResponse(405, 'Method not allowed');
@@ -129,7 +145,7 @@ async function handleSquareRoute(request: Request, env: Env, url: URL): Promise<
       const existing = await loadSquareCredentials(env);
       const merged = mergeSquareCredentials(existing, payload.credentials);
       await env.BAKERY_DATA.put(SQUARE_CREDENTIALS_KEY, JSON.stringify(merged));
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
+      return new Response(null, { status: 204, headers: secureHeaders(CORS_HEADERS) });
     }
 
     return errorResponse(405, 'Method not allowed');
@@ -379,20 +395,46 @@ async function proxyToAnthropic(request: Request, env: Env): Promise<Response> {
   const responseBody = await anthropicResponse.text();
   return new Response(responseBody, {
     status: anthropicResponse.status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: secureHeaders({ 'Content-Type': 'application/json', ...CORS_HEADERS }),
   });
 }
 
 function errorResponse(status: number, message: string): Response {
   return new Response(JSON.stringify({ error: message }), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: secureHeaders({ 'Content-Type': 'application/json', ...CORS_HEADERS }),
   });
 }
 
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    headers: secureHeaders({ 'Content-Type': 'application/json', ...CORS_HEADERS }),
+  });
+}
+
+function securityTxtResponse(): Response {
+  return new Response(SECURITY_TXT, {
+    status: 200,
+    headers: secureHeaders({
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600',
+    }),
+  });
+}
+
+function secureHeaders(headers?: HeadersInit): Headers {
+  const result = new Headers(headers);
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    result.set(key, value);
+  }
+  return result;
+}
+
+function withSecurityHeaders(response: Response): Response {
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: secureHeaders(response.headers),
   });
 }
