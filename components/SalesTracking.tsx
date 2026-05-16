@@ -505,6 +505,21 @@ const LogTab: React.FC<LogTabProps> = ({
     focusable[0]?.focus();
   }, [showLogForm]);
 
+  const handleDialogKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key !== 'Tab' || !dialogRef.current) return;
+    const focusable: HTMLElement[] = Array.from(
+      dialogRef.current.querySelectorAll('button:not([disabled]), input, select, textarea')
+    );
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+    } else {
+      if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  }, []);
+
   const sorted = useMemo(
     () => [...distributions].sort((a, b) => b.date.localeCompare(a.date)),
     [distributions],
@@ -663,6 +678,7 @@ const LogTab: React.FC<LogTabProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="log-dist-title"
+            onKeyDown={handleDialogKeyDown}
             className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6 w-full max-w-md space-y-4"
           >
             <h2 id="log-dist-title" className="text-lg font-semibold text-stone-900 dark:text-stone-50">Log Distribution</h2>

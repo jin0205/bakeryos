@@ -316,7 +316,7 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
           )}
 
           <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">
-            <div className="bg-stone-800 text-white px-6 py-4 flex justify-between items-center">
+            <div className="bg-stone-800 dark:bg-stone-950 text-stone-50 px-6 py-4 flex justify-between items-center">
               <h3 className="font-bold">Master Production List</h3>
               <div className="text-right">
                   <div className="text-sm opacity-80">{(plannerSummary.totalDough / 1000).toFixed(2)} kg total dough</div>
