@@ -26,6 +26,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
   const [filter, setFilter] = useState<WorkOrderStatus | 'all'>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [scheduleDateInputs, setScheduleDateInputs] = useState<Record<string, string>>({});
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
     setWorkOrders(storageService.load<WorkOrder>('bakeryos_work_orders'));
@@ -57,9 +58,9 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
   };
 
   const deleteWorkOrder = (id: string) => {
-    if (!window.confirm('Delete this work order? This cannot be undone.')) return;
     saveWorkOrders(workOrders.filter(wo => wo.id !== id));
     if (expandedId === id) setExpandedId(null);
+    setDeleteConfirmId(null);
   };
 
   const filtered = filter === 'all' ? workOrders : workOrders.filter(wo => wo.status === filter);
@@ -142,7 +143,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
               {filtered.map(wo => (
                 <React.Fragment key={wo.id}>
                   <tr
-                    className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer"
+                    className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500"
                     onClick={() => setExpandedId(expandedId === wo.id ? null : wo.id)}
                     tabIndex={0}
                     aria-expanded={expandedId === wo.id}
@@ -283,12 +284,30 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                               </button>
                             )}
                             {wo.status === 'draft' && (
-                              <button
-                                onClick={() => deleteWorkOrder(wo.id)}
-                                className="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-200 dark:border-red-900/40 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
-                              >
-                                Delete
-                              </button>
+                              deleteConfirmId === wo.id ? (
+                                <div role="group" aria-label="Confirm delete" className="flex items-center gap-2">
+                                  <span className="text-xs text-stone-500 dark:text-stone-400">Delete this work order?</span>
+                                  <button
+                                    onClick={() => deleteWorkOrder(wo.id)}
+                                    className="px-2.5 py-1 text-xs font-bold text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/40 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                                  >
+                                    Yes, delete
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteConfirmId(null)}
+                                    className="px-2.5 py-1 text-xs text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => setDeleteConfirmId(wo.id)}
+                                  className="px-3 py-1.5 text-xs font-semibold text-red-500 border border-red-200 dark:border-red-900/40 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              )
                             )}
                           </div>
                         </div>

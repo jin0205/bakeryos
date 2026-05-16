@@ -236,8 +236,12 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                 value={newItemName}
                 onChange={e => setNewItemName(e.target.value)}
                 placeholder="e.g. Bread Flour"
+                required
                 className={inputBase}
               />
+              {newItemName === '' && procurementPreview && (
+                <span className="text-[10px] text-red-500 mt-1 block">Ingredient name is required</span>
+              )}
             </div>
 
             {/* Qty Ordered */}
@@ -444,7 +448,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                       tabIndex={item.isInventory && onOpenPanel ? 0 : undefined}
                       aria-label={item.isInventory && onOpenPanel ? `View ${item.name} inventory details` : undefined}
                       onKeyDown={item.isInventory && onOpenPanel ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const { isInventory, ...inventoryItem } = item; onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem }); } } : undefined}
-                      className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
+                      className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-amber-500 ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
                     >
                       {/* Ingredient + badge */}
                       <td className="py-4 px-6">
