@@ -178,6 +178,9 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
               <div className="relative">
                 <button
                   onClick={() => setShowWOMenu(!showWOMenu)}
+                  aria-expanded={showWOMenu}
+                  aria-haspopup="dialog"
+                  aria-controls="wo-dropdown"
                   className="border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 bg-white dark:bg-stone-900 hover:bg-stone-50 dark:hover:bg-stone-800 px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,7 +189,7 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
                   Save as Work Order
                 </button>
                 {showWOMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl p-4 z-10">
+                  <div id="wo-dropdown" role="dialog" aria-label="New Work Order" className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-xl p-4 z-10">
                     <p className="text-xs font-black uppercase tracking-widest text-stone-400 mb-3">New Work Order</p>
                     <div className="space-y-3">
                       <div>
@@ -301,8 +304,8 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto items-end">
                       <div className="flex rounded-md shadow-sm">
-                          <button onClick={() => setBatchScalingMode('percentage')} className={`px-3 py-1.5 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>%</button>
-                          <button onClick={() => setBatchScalingMode('weight')} className={`px-3 py-1.5 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>Total Weight</button>
+                          <button onClick={() => setBatchScalingMode('percentage')} aria-pressed={batchScalingMode === 'percentage'} className={`px-3 py-2 text-xs font-medium rounded-l-md border ${batchScalingMode === 'percentage' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>%</button>
+                          <button onClick={() => setBatchScalingMode('weight')} aria-pressed={batchScalingMode === 'weight'} className={`px-3 py-2 text-xs font-medium rounded-r-md border-t border-b border-r ${batchScalingMode === 'weight' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white dark:bg-stone-900 text-stone-600 dark:text-stone-300 border-stone-300 dark:border-stone-700'}`}>Total Weight</button>
                       </div>
                       <div className="flex gap-2">
                         <input type="number" value={batchScaleValue} onChange={(e) => setBatchScaleValue(e.target.value)} className="block w-32 px-3 py-1.5 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-950 rounded-md text-sm dark:text-stone-100" placeholder={batchScalingMode === 'percentage' ? "%" : "grams"} />
@@ -313,7 +316,7 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
           )}
 
           <div className="bg-white dark:bg-stone-900/60 rounded-lg border border-stone-200 dark:border-stone-800 shadow-sm overflow-hidden transition-colors">
-            <div className="bg-stone-800 dark:bg-stone-950 text-white px-6 py-4 flex justify-between items-center">
+            <div className="bg-stone-800 text-white px-6 py-4 flex justify-between items-center">
               <h3 className="font-bold">Master Production List</h3>
               <div className="text-right">
                   <div className="text-sm opacity-80">{(plannerSummary.totalDough / 1000).toFixed(2)} kg total dough</div>

@@ -83,7 +83,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
       </div>
 
       {/* KPI Strip */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {(['draft', 'scheduled', 'in-production', 'complete'] as WorkOrderStatus[]).map(status => (
           <div key={status} className="bg-white dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700 p-4 shadow-sm">
             <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-1">{STATUS_LABEL[status]}</p>
@@ -145,6 +145,8 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                     className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer"
                     onClick={() => setExpandedId(expandedId === wo.id ? null : wo.id)}
                     tabIndex={0}
+                    aria-expanded={expandedId === wo.id}
+                    aria-label={`Work order ${wo.id}, ${wo.lineItems.map(li => li.recipeName).join(', ')}`}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedId(expandedId === wo.id ? null : wo.id); } }}
                   >
                     <td className="px-4 py-3 text-sm font-mono font-bold text-stone-900 dark:text-stone-100">{wo.id}</td>
@@ -173,7 +175,7 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                             aria-label="View details"
                             className="p-1 text-stone-400 hover:text-amber-600 transition-colors cursor-pointer"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </button>

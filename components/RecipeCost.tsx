@@ -110,6 +110,7 @@ const RecipeCost: React.FC<RecipeCostProps> = ({
                                         <button
                                             onClick={() => handleSuggestCost(item.name, item.id)}
                                             disabled={loadingSuggestion === item.id || !item.name}
+                                            aria-label="Auto-suggest market price"
                                             className="p-1.5 text-stone-300 dark:text-stone-600 hover:text-amber-600 dark:hover:text-amber-400 transition-colors disabled:opacity-50"
                                             title="Auto-suggest market price"
                                         >
