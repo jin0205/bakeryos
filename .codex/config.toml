@@ -1,3 +1,5 @@
+sandbox_mode = "workspace-write"
+
 [mcp_servers.ccusage]
 args = ["@ccusage/mcp@latest"]
 command = "npx"
