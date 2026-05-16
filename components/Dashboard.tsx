@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import { WorkOrder, SavedRecipe, InventoryItem, PlannerItem } from '../types';
 import { PanelPayload } from '../App';
 import { storageService } from '../services/storageService';
@@ -20,6 +20,23 @@ const STATUS_BADGE: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   'draft': 'Draft', 'scheduled': 'Scheduled',
   'in-production': 'In Production', 'complete': 'Complete',
+};
+
+const exportData = () => {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('bakeryos_'));
+  const data: Record<string, unknown> = {};
+  for (const key of keys) {
+    try { data[key] = JSON.parse(localStorage.getItem(key) ?? 'null'); }
+    catch { data[key] = localStorage.getItem(key); }
+  }
+  const payload = JSON.stringify({ version: 1, exportedAt: new Date().toISOString(), data }, null, 2);
+  const blob = new Blob([payload], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'bakeryos-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
 };
 
 const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
@@ -73,6 +90,29 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
       onClick: () => onOpenPanel({ type: 'kpi-batch', items: planItems }),
     },
   ];
+
+  const importRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const backup = JSON.parse(ev.target?.result as string) as { version: number; data: Record<string, unknown> };
+        if (!backup.data) throw new Error('Invalid backup');
+        Object.entries(backup.data).forEach(([k, v]) => localStorage.setItem(k, JSON.stringify(v)));
+        window.location.reload();
+      } catch {
+        alert('Could not read backup file. Make sure it is a BakeryOS export.');
+        setImporting(false);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, []);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -129,7 +169,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
               {todayWOs.map(wo => (
                 <tr
                   key={wo.id}
+                  tabIndex={0}
                   onClick={() => onOpenPanel({ type: 'work-order', data: wo })}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenPanel({ type: 'work-order', data: wo }); } }}
+                  aria-label={`View work order ${wo.id}`}
                   className="hover:bg-stone-50 dark:hover:bg-stone-800/30 cursor-pointer transition-colors"
                 >
                   <td className="px-5 py-3 text-sm font-mono font-bold text-stone-900 dark:text-stone-100">{wo.id}</td>
@@ -179,6 +222,33 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
           >
             Cost & Margin
           </button>
+        </div>
+      </div>
+
+      {/* Data backup */}
+      <div>
+        <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-3">Data</p>
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={exportData}
+            className="px-4 py-2 text-stone-600 dark:text-stone-400 text-sm font-medium rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors"
+          >
+            Export Backup
+          </button>
+          <button
+            onClick={() => importRef.current?.click()}
+            disabled={importing}
+            className="px-4 py-2 text-stone-600 dark:text-stone-400 text-sm font-medium rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+          >
+            {importing ? 'Importing…' : 'Restore Backup'}
+          </button>
+          <input
+            ref={importRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImport}
+          />
         </div>
       </div>
     </div>

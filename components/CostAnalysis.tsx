@@ -120,10 +120,10 @@ const CostAnalysis: React.FC = () => {
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
                                         {row.inventoryStatus === 'full' && (
-                                            <BoxIcon className="w-4 h-4 text-green-600" title="Calculated using live inventory prices" />
+                                            <BoxIcon className="w-4 h-4 text-green-600" aria-hidden="true" title="Calculated using live inventory prices" />
                                         )}
                                         {row.inventoryStatus === 'partial' && (
-                                            <BoxIcon className="w-4 h-4 text-amber-500" title="Partially calculated using inventory prices" />
+                                            <BoxIcon className="w-4 h-4 text-amber-500" aria-hidden="true" title="Partially calculated using inventory prices" />
                                         )}
                                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400">
                                             ${row.costPerLoaf.toFixed(2)}

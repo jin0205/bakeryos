@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { storageService } from '../services/storageService';
 import { fetchCatalogItemNames, loadSquareCredentialStatuses, saveSquareCredentials, syncAllLocations } from '../services/squareService';
 import type {
@@ -187,10 +187,14 @@ const SalesTracking: React.FC = () => {
         <h1 className="text-2xl font-bold text-stone-900 dark:text-stone-50">Sales Tracking</h1>
       </div>
 
-      <div className="flex gap-1 border-b border-stone-200 dark:border-stone-700">
+      <div role="tablist" className="flex gap-1 border-b border-stone-200 dark:border-stone-700">
         {(['log', 'settings'] as SubTab[]).map(t => (
           <button
             key={t}
+            id={`sales-tab-${t}`}
+            role="tab"
+            aria-selected={subTab === t}
+            aria-controls={`sales-panel-${t}`}
             onClick={() => setSubTab(t)}
             className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px capitalize ${
               subTab === t
@@ -204,34 +208,38 @@ const SalesTracking: React.FC = () => {
       </div>
 
       {subTab === 'log' && (
-        <LogTab
-          distributions={distributions}
-          setDistributions={setDistributions}
-          salesCache={salesCache}
-          itemMappings={itemMappings}
-          recipeNames={recipeNames}
-          syncing={syncing}
-          onSync={handleSync}
-          showLogForm={showLogForm}
-          setShowLogForm={setShowLogForm}
-        />
+        <div id="sales-panel-log" role="tabpanel" aria-labelledby="sales-tab-log">
+          <LogTab
+            distributions={distributions}
+            setDistributions={setDistributions}
+            salesCache={salesCache}
+            itemMappings={itemMappings}
+            recipeNames={recipeNames}
+            syncing={syncing}
+            onSync={handleSync}
+            showLogForm={showLogForm}
+            setShowLogForm={setShowLogForm}
+          />
+        </div>
       )}
 
       {subTab === 'settings' && (
-        <SettingsTab
-          credentials={credentials}
-          onChangeCredentials={setCredentials}
-          onSaveCredentials={saveCredentials}
-          onClearCredential={clearCredential}
-          credentialError={credentialError}
-          savingCredentials={savingCredentials}
-          itemMappings={itemMappings}
-          onSaveItemMappings={saveItemMappings}
-          catalogItems={catalogItems}
-          onFetchCatalog={handleFetchCatalog}
-          fetchingCatalog={fetchingCatalog}
-          recipeNames={recipeNames}
-        />
+        <div id="sales-panel-settings" role="tabpanel" aria-labelledby="sales-tab-settings">
+          <SettingsTab
+            credentials={credentials}
+            onChangeCredentials={setCredentials}
+            onSaveCredentials={saveCredentials}
+            onClearCredential={clearCredential}
+            credentialError={credentialError}
+            savingCredentials={savingCredentials}
+            itemMappings={itemMappings}
+            onSaveItemMappings={saveItemMappings}
+            catalogItems={catalogItems}
+            onFetchCatalog={handleFetchCatalog}
+            fetchingCatalog={fetchingCatalog}
+            recipeNames={recipeNames}
+          />
+        </div>
       )}
     </div>
   );
@@ -371,7 +379,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
           </p>
         )}
 
-        <div className="space-y-2">
+        <div className="overflow-x-auto">
+        <div className="space-y-2 min-w-[560px]">
           <div className="grid grid-cols-12 gap-2 text-xs font-medium text-stone-500 dark:text-stone-400 px-1">
             <span className="col-span-4">Square Item</span>
             <span className="col-span-4">Maps To (BakeryOS)</span>
@@ -453,6 +462,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
             + Add Mapping
           </button>
         </div>
+        </div>
       </section>
     </div>
   );
@@ -485,6 +495,15 @@ const LogTab: React.FC<LogTabProps> = ({
   recipeNames, syncing, onSync, showLogForm, setShowLogForm,
 }) => {
   const [form, setForm] = useState(makeEmptyForm);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showLogForm || !dialogRef.current) return;
+    const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), input, select, textarea'
+    );
+    focusable[0]?.focus();
+  }, [showLogForm]);
 
   const sorted = useMemo(
     () => [...distributions].sort((a, b) => b.date.localeCompare(a.date)),
@@ -635,9 +654,18 @@ const LogTab: React.FC<LogTabProps> = ({
       </div>
 
       {showLogForm && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6 w-full max-w-md space-y-4">
-            <h2 className="text-lg font-semibold text-stone-900 dark:text-stone-50">Log Distribution</h2>
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onKeyDown={e => { if (e.key === 'Escape') { setShowLogForm(false); setForm(makeEmptyForm()); } }}
+        >
+          <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="log-dist-title"
+            className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6 w-full max-w-md space-y-4"
+          >
+            <h2 id="log-dist-title" className="text-lg font-semibold text-stone-900 dark:text-stone-50">Log Distribution</h2>
 
             <div>
               <label className="block text-xs text-stone-500 dark:text-stone-400 mb-1">Date</label>

@@ -447,6 +447,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                         onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem });
                       } : undefined}
                       tabIndex={item.isInventory && onOpenPanel ? 0 : undefined}
+                      aria-label={item.isInventory && onOpenPanel ? `View ${item.name} inventory details` : undefined}
                       onKeyDown={item.isInventory && onOpenPanel ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const { isInventory, ...inventoryItem } = item; onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem }); } } : undefined}
                       className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${
                         isEven ? 'bg-white dark:bg-stone-800' : 'bg-stone-50/50 dark:bg-stone-900/20'
