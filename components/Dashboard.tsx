@@ -131,11 +131,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onOpenPanel, onNavigate }) => {
           <button
             key={card.label}
             onClick={card.onClick}
-            className={`bg-white dark:bg-stone-900/60 rounded-xl border ${card.border} p-5 shadow-sm text-left hover:shadow-md transition-shadow cursor-pointer`}
+            className={`bg-white dark:bg-stone-900/60 rounded-xl border ${card.border} px-5 py-4 shadow-sm text-left hover:shadow-md transition-shadow cursor-pointer`}
           >
-            <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 mb-2">{card.label}</p>
-            <p className={`text-3xl font-black ${card.accent} mb-1`}>{card.value}</p>
-            <p className="text-xs text-stone-400 dark:text-stone-500">{card.sub}</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 leading-tight">{card.label}</p>
+                <p className="text-xs text-stone-400 dark:text-stone-500 mt-1.5 leading-snug">{card.sub}</p>
+              </div>
+              <p className={`text-3xl font-black tabular-nums shrink-0 ${card.accent}`}>{card.value}</p>
+            </div>
           </button>
         ))}
       </div>

@@ -196,26 +196,22 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="flex flex-wrap gap-x-8 gap-y-4 px-5 py-4 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl">
         {[
-          { label: 'Total Stock Value', value: `$${stats.totalValue.toFixed(2)}`, sub: 'at cost', accent: false },
-          { label: 'Items Tracked',     value: stats.total,                        sub: 'ingredients', accent: false },
-          { label: 'Low Stock',         value: stats.lowStock,                     sub: '< 2 kg remaining', accent: stats.lowStock > 0 },
-          { label: 'Deficit',           value: stats.deficit,                      sub: 'need restock', accent: stats.deficit > 0 },
-        ].map(({ label, value, sub, accent }) => (
-          <div
-            key={label}
-            className={`bg-white dark:bg-stone-800 rounded-xl border p-4 ${
-              accent
-                ? 'border-amber-300 dark:border-amber-700/60'
-                : 'border-stone-200 dark:border-stone-700'
-            }`}
-          >
-            <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-1">{label}</p>
-            <p className={`text-2xl font-black font-mono ${accent ? 'text-amber-600 dark:text-amber-400' : 'text-stone-900 dark:text-stone-50'}`}>
-              {value}
-            </p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{sub}</p>
+          { label: 'Stock Value', value: `$${stats.totalValue.toFixed(2)}`, sub: 'at cost', accent: false },
+          { label: 'Tracked',     value: String(stats.total),               sub: 'ingredients', accent: false },
+          { label: 'Low Stock',   value: String(stats.lowStock),             sub: '< 2 kg left', accent: stats.lowStock > 0 },
+          { label: 'Deficit',     value: String(stats.deficit),              sub: 'need restock', accent: stats.deficit > 0 },
+        ].map(({ label, value, sub, accent }, i, arr) => (
+          <div key={label} className="flex items-center gap-8">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-stone-400 dark:text-stone-500 mb-0.5">{label}</p>
+              <div className="flex items-baseline gap-1.5">
+                <span className={`text-xl font-black font-mono ${accent ? 'text-amber-600 dark:text-amber-400' : 'text-stone-900 dark:text-stone-50'}`}>{value}</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">{sub}</span>
+              </div>
+            </div>
+            {i < arr.length - 1 && <div className="w-px h-8 bg-stone-200 dark:bg-stone-700 shrink-0" />}
           </div>
         ))}
       </div>
@@ -432,12 +428,11 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                   </td>
                 </tr>
               ) : (
-                ledgerRows.map((item, idx) => {
+                ledgerRows.map((item) => {
                   const req      = requirements[item.name] || 0;
                   const balance  = item.quantity - req;
                   const isLow    = item.isInventory && balance >= 0 && balance < 2000;
                   const isCrit   = balance < 0;
-                  const isEven   = idx % 2 === 0;
 
                   return (
                     <tr
@@ -449,9 +444,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                       tabIndex={item.isInventory && onOpenPanel ? 0 : undefined}
                       aria-label={item.isInventory && onOpenPanel ? `View ${item.name} inventory details` : undefined}
                       onKeyDown={item.isInventory && onOpenPanel ? e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const { isInventory, ...inventoryItem } = item; onOpenPanel({ type: 'inventory', data: inventoryItem as InventoryItem }); } } : undefined}
-                      className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${
-                        isEven ? 'bg-white dark:bg-stone-800' : 'bg-stone-50/50 dark:bg-stone-900/20'
-                      } ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
+                      className={`hover:bg-amber-50/40 dark:hover:bg-amber-900/10 transition-colors duration-150 ${item.isInventory && onOpenPanel ? 'cursor-pointer' : ''}`}
                     >
                       {/* Ingredient + badge */}
                       <td className="py-4 px-6">
