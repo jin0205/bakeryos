@@ -455,17 +455,17 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
                         <div className="flex items-center gap-2.5 flex-wrap">
                           <span className="font-semibold text-stone-900 dark:text-stone-100">{item.name}</span>
                           {!item.isInventory && (
-                            <span className="text-[9px] bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 px-2 py-0.5 rounded-full font-black uppercase tracking-wide">
+                            <span className="text-[9px] bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 px-2 py-0.5 rounded font-black uppercase tracking-wide">
                               Not Tracked
                             </span>
                           )}
                           {isLow && (
-                            <span className="inline-flex items-center gap-1 text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-black uppercase tracking-wide">
+                            <span className="inline-flex items-center gap-1 text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded font-black uppercase tracking-wide">
                               <AlertTriangleIcon className="w-2.5 h-2.5" aria-hidden="true" /> Low Stock
                             </span>
                           )}
                           {isCrit && (
-                            <span className="inline-flex items-center gap-1 text-[9px] bg-red-600 dark:bg-red-700/80 text-white px-2 py-0.5 rounded-full font-black uppercase tracking-wide">
+                            <span className="inline-flex items-center gap-1 text-[9px] bg-red-600 dark:bg-red-700/80 text-white px-2 py-0.5 rounded font-black uppercase tracking-wide">
                               <AlertTriangleIcon className="w-2.5 h-2.5" aria-hidden="true" /> Deficit
                             </span>
                           )}

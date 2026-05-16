@@ -397,8 +397,8 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
             <div className="bg-stone-800 dark:bg-stone-950 text-stone-50 px-6 py-4 flex justify-between items-center">
               <h3 className="font-bold">Master Production List</h3>
               <div className="text-right">
-                  <div className="text-sm opacity-80">{(plannerSummary.totalDough / 1000).toFixed(2)} kg total dough</div>
-                  <div className="text-xl font-bold text-amber-400">${plannerSummary.totalCost.toFixed(2)} cost</div>
+                  <div className="text-sm font-mono opacity-80">{(plannerSummary.totalDough / 1000).toFixed(2)} kg total dough</div>
+                  <div className="text-xl font-mono font-bold text-amber-400">${plannerSummary.totalCost.toFixed(2)} cost</div>
               </div>
             </div>
 
@@ -422,10 +422,10 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
                     return (
                       <tr key={name} className="hover:bg-stone-50 dark:hover:bg-stone-800/30">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-stone-900 dark:text-stone-100">{name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-stone-600 dark:text-stone-400 text-right">{itemData.weight >= 1000 ? `${(itemData.weight / 1000).toFixed(2)} kg` : `${itemData.weight.toFixed(0)} g`}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-stone-600 dark:text-stone-400 text-right">{itemData.weight >= 1000 ? `${(itemData.weight / 1000).toFixed(2)} kg` : `${itemData.weight.toFixed(0)} g`}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                           {remaining !== null ? (
-                            <span className={remaining < 0 ? 'text-red-600 font-bold' : 'text-stone-500'}>
+                            <span className={`font-mono ${remaining < 0 ? 'text-red-600 font-bold' : 'text-stone-500'}`}>
                               {(remaining / 1000).toFixed(2)} kg
                             </span>
                           ) : (

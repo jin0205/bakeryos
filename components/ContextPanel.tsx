@@ -184,7 +184,7 @@ const ContextPanel: React.FC<ContextPanelProps> = ({ panel, onClose }) => {
             <div>
               <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">{item.name}</h3>
               {isLow && (
-                <span className="inline-flex items-center gap-1 mt-1 text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-black uppercase tracking-wide">
+                <span className="inline-flex items-center gap-1 mt-1 text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded font-black uppercase tracking-wide">
                   Low Stock
                 </span>
               )}

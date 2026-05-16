@@ -634,19 +634,19 @@ const LogTab: React.FC<LogTabProps> = ({
                     <td className="px-4 py-3 text-stone-700 dark:text-stone-300">{dist.date}</td>
                     <td className="px-4 py-3 text-stone-900 dark:text-stone-100 font-medium">{dist.item_name}</td>
                     <td className="px-4 py-3 text-stone-600 dark:text-stone-400">{LOCATION_LABELS[dist.location]}</td>
-                    <td className="px-4 py-3 text-right text-stone-900 dark:text-stone-100">{dist.quantity_distributed}</td>
+                    <td className="px-4 py-3 text-right font-mono text-stone-900 dark:text-stone-100">{dist.quantity_distributed}</td>
                     <td className="px-4 py-3 text-right">
                       {noData ? (
                         <span className="text-stone-300 dark:text-stone-600 text-xs">no sales data</span>
                       ) : (
-                        <span className="text-stone-900 dark:text-stone-100">{qtySold}</span>
+                        <span className="font-mono text-stone-900 dark:text-stone-100">{qtySold}</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {noData ? (
                         <span className="text-stone-300 dark:text-stone-600 text-xs">—</span>
                       ) : (
-                        <span className={remaining! < 0 ? 'text-red-600 dark:text-red-400' : 'text-stone-900 dark:text-stone-100'}>
+                        <span className={`font-mono ${remaining! < 0 ? 'text-red-600 dark:text-red-400' : 'text-stone-900 dark:text-stone-100'}`}>
                           {remaining}
                         </span>
                       )}
@@ -655,7 +655,7 @@ const LogTab: React.FC<LogTabProps> = ({
                       {noData ? (
                         <span className="text-stone-300 dark:text-stone-600 text-xs">—</span>
                       ) : (
-                        <span className={`font-medium ${sellThrough! >= 80 ? 'text-emerald-600 dark:text-emerald-400' : sellThrough! >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
+                        <span className={`font-mono font-medium ${sellThrough! >= 80 ? 'text-emerald-600 dark:text-emerald-400' : sellThrough! >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'}`}>
                           {sellThrough!.toFixed(0)}%
                         </span>
                       )}
