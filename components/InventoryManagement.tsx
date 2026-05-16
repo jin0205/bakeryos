@@ -45,6 +45,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
   const [unit, setUnit] = useState<UnitOfMeasure>('lb');
   const [itemsPerPackage, setItemsPerPackage] = useState('1');
   const [costPerPackage, setCostPerPackage] = useState('');
+  const [shippingCost, setShippingCost] = useState('');
 
   useEffect(() => {
     const loadData = () => {
@@ -72,19 +73,21 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
   };
 
   const procurementPreview = useMemo(() => {
-    const pCost   = parseFloat(costPerPackage) || 0;
-    const pQty    = parseFloat(qtyOrdered) || 0;
-    const iCount  = parseFloat(itemsPerPackage) || 1;
-    const iWeight = parseFloat(weightPerItem) || 0;
+    const pCost    = parseFloat(costPerPackage) || 0;
+    const pQty     = parseFloat(qtyOrdered) || 0;
+    const iCount   = parseFloat(itemsPerPackage) || 1;
+    const iWeight  = parseFloat(weightPerItem) || 0;
+    const shipping = parseFloat(shippingCost) || 0;
     if (iWeight <= 0 || pQty <= 0) return null;
     const singleItemGrams    = convertToGrams(iWeight, unit);
     const gramsPerPackage    = singleItemGrams * iCount;
     const totalGramsReceived = gramsPerPackage * pQty;
-    const totalCost          = pCost * pQty;
+    const itemsCost          = pCost * pQty;
+    const totalCost          = itemsCost + shipping;
     const costPerKg          = totalCost / (totalGramsReceived / 1000);
     const costPerItem        = iCount > 1 ? pCost / iCount : null;
-    return { totalGramsReceived, totalCost, costPerKg, costPerItem, gramsPerPackage };
-  }, [qtyOrdered, weightPerItem, unit, itemsPerPackage, costPerPackage]);
+    return { totalGramsReceived, itemsCost, totalCost, shipping, costPerKg, costPerItem, gramsPerPackage };
+  }, [qtyOrdered, weightPerItem, unit, itemsPerPackage, costPerPackage, shippingCost]);
 
   const addInventoryItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,6 +121,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
     setNewItemName('');
     setWeightPerItem('');
     setCostPerPackage('');
+    setShippingCost('');
     setQtyOrdered('1');
     setItemsPerPackage('1');
   };
@@ -305,10 +309,30 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
               </div>
             </div>
 
+            {/* Shipping Cost */}
+            <div className="md:col-span-3">
+              <label htmlFor="inv-shipping" className="block text-[10px] font-black text-stone-500 uppercase tracking-wider mb-1.5">
+                Shipping <span className="normal-case font-normal text-stone-400">(optional)</span>
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm pointer-events-none">$</span>
+                <input
+                  id="inv-shipping"
+                  type="number"
+                  step="0.01"
+                  value={shippingCost}
+                  onChange={e => setShippingCost(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full pl-7 pr-3 py-2 bg-stone-50 dark:bg-stone-950 border border-stone-200 dark:border-stone-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors text-sm text-stone-900 dark:text-stone-100 font-medium"
+                />
+              </div>
+              <span className="text-[9px] text-stone-400 mt-1 block">Allocated to this item</span>
+            </div>
+
             {/* Items per Package */}
-            <div className="md:col-span-4">
+            <div className="md:col-span-3">
               <label htmlFor="inv-items" className="block text-[10px] font-black text-stone-500 uppercase tracking-wider mb-1.5">
-                Items per Package <span className="normal-case font-normal text-stone-400">(optional)</span>
+                Items / Package <span className="normal-case font-normal text-stone-400">(optional)</span>
               </label>
               <input
                 id="inv-items"
@@ -321,7 +345,7 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
             </div>
 
             {/* Submit */}
-            <div className="md:col-span-8 flex items-end">
+            <div className="md:col-span-6 flex items-end">
               <button
                 type="submit"
                 disabled={!newItemName.trim() || !procurementPreview}
@@ -334,33 +358,48 @@ const InventoryManagement: React.FC<InventoryManagementProps> = ({ onOpenPanel }
 
           {/* Procurement Preview */}
           {procurementPreview && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4">
-              <div>
-                <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Total Weight</span>
-                <span className="text-xl font-black font-mono text-stone-800 dark:text-stone-100">
-                  {procurementPreview.totalGramsReceived >= 1000
-                    ? `${(procurementPreview.totalGramsReceived / 1000).toFixed(2)} kg`
-                    : `${procurementPreview.totalGramsReceived.toFixed(0)} g`}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Normalized Cost</span>
-                <span className="text-xl font-black font-mono text-amber-600 dark:text-amber-400">
-                  ${procurementPreview.costPerKg.toFixed(2)}<span className="text-sm font-medium"> / kg</span>
-                </span>
-              </div>
-              <div>
-                <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Total Investment</span>
-                <span className="text-xl font-black font-mono text-stone-800 dark:text-stone-100">
-                  ${procurementPreview.totalCost.toFixed(2)}
-                </span>
-              </div>
-              {procurementPreview.costPerItem && (
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-xl p-4 space-y-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Cost per Item</span>
+                  <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Total Weight</span>
                   <span className="text-xl font-black font-mono text-stone-800 dark:text-stone-100">
-                    ${procurementPreview.costPerItem.toFixed(2)}
+                    {procurementPreview.totalGramsReceived >= 1000
+                      ? `${(procurementPreview.totalGramsReceived / 1000).toFixed(2)} kg`
+                      : `${procurementPreview.totalGramsReceived.toFixed(0)} g`}
                   </span>
+                </div>
+                <div>
+                  <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Normalized Cost</span>
+                  <span className="text-xl font-black font-mono text-amber-600 dark:text-amber-400">
+                    ${procurementPreview.costPerKg.toFixed(2)}<span className="text-sm font-medium"> / kg</span>
+                  </span>
+                  {procurementPreview.shipping > 0 && (
+                    <span className="block text-[9px] text-stone-400 mt-0.5">incl. shipping</span>
+                  )}
+                </div>
+                <div>
+                  <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Total Investment</span>
+                  <span className="text-xl font-black font-mono text-stone-800 dark:text-stone-100">
+                    ${procurementPreview.totalCost.toFixed(2)}
+                  </span>
+                </div>
+                {procurementPreview.costPerItem && (
+                  <div>
+                    <span className="block text-[10px] font-black text-stone-400 dark:text-stone-500 uppercase tracking-widest mb-1">Cost per Item</span>
+                    <span className="text-xl font-black font-mono text-stone-800 dark:text-stone-100">
+                      ${procurementPreview.costPerItem.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {procurementPreview.shipping > 0 && (
+                <div className="flex items-center gap-3 pt-2 border-t border-amber-200 dark:border-amber-800/40 text-xs text-stone-500 dark:text-stone-400">
+                  <span className="font-black uppercase tracking-widest text-[9px]">Cost breakdown:</span>
+                  <span>Items <span className="font-mono font-semibold text-stone-700 dark:text-stone-300">${procurementPreview.itemsCost.toFixed(2)}</span></span>
+                  <span>+</span>
+                  <span>Shipping <span className="font-mono font-semibold text-stone-700 dark:text-stone-300">${procurementPreview.shipping.toFixed(2)}</span></span>
+                  <span>=</span>
+                  <span>Total <span className="font-mono font-semibold text-stone-700 dark:text-stone-300">${procurementPreview.totalCost.toFixed(2)}</span></span>
                 </div>
               )}
             </div>
