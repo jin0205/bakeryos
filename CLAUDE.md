@@ -138,6 +138,20 @@ npm run dev:worker   # Wrangler on :8787
 - When resolving merge conflicts in `package.json`, prefer HEAD versions and regenerate lockfile
 - Regenerate lockfiles after any dependency changes (`npm install`).
 
+## Batch Planner Wizard (Deferred)
+
+The current Batch Planner layout forces four simultaneous decisions on one screen (Add Recipes sidebar, editable count list, Batch Scaling controls, Master Production List). This creates cognitive overload, especially for the 8-step "Release to Production" flow.
+
+**Planned redesign:** Replace the single-screen layout with a 4-step linear wizard:
+1. **Select recipes** — searchable list, add to plan
+2. **Set counts** — each selected recipe with count input and weight preview
+3. **Preview stock impact** — MPL table showing ingredient requirements vs. current stock, with warnings for deficits
+4. **Confirm** — scheduled date, status (draft/scheduled), summary before commit
+
+The wizard should show a persistent running summary (total dough weight, estimated cost) in a sidebar or sticky footer throughout all steps. The pre-commit screen must show the full stock-impact table before inventory is deducted.
+
+Trigger with: `/impeccable layout Batch Planner wizard redesign`
+
 ## Available Agents
 - `ui-reviewer` — reviews components for dark mode coverage, Tailwind consistency, and accessibility
   - Trigger: "run the ui-reviewer on [ComponentName]"

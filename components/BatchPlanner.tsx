@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { SavedRecipe, PlannerItem, InventoryItem, Ingredient } from '../types';
 import { storageService } from '../services/storageService';
 
@@ -20,7 +20,30 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
   const [scheduledDate, setScheduledDate] = useState<string>('');
   const [woStatus, setWoStatus] = useState<'draft' | 'scheduled'>('scheduled');
 
+  // Commit confirmation + toast
+  const [showCommitConfirm, setShowCommitConfirm] = useState<boolean>(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const isInitialMount = useRef(true);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToast(null), 5000);
+  }, []);
+
+  useEffect(() => {
+    return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); };
+  }, []);
+
+  // Close WO dropdown on Esc
+  useEffect(() => {
+    if (!showWOMenu) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setShowWOMenu(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [showWOMenu]);
 
   // Load saved recipes, persisted plan, and inventory
   useEffect(() => {
@@ -140,15 +163,17 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
 
   const handleCommitBake = () => {
       if (plannerItems.length === 0) return;
-      if (!window.confirm("Commit this batch? This will subtract the required ingredients from your inventory stock and clear the planner.")) return;
+      setShowCommitConfirm(true);
+  };
 
+  const executeCommitBake = () => {
+      setShowCommitConfirm(false);
       const updatedInventory = [...inventory];
       let missingItems: string[] = [];
 
       Object.entries(plannerSummary.summary).forEach(([name, data]) => {
           const invItemIndex = updatedInventory.findIndex(i => i.name.toLowerCase().trim() === name.toLowerCase().trim());
           if (invItemIndex > -1) {
-              // Fix: Added type assertion to fix potential unknown type error when accessing data.weight
               const itemData = data as { weight: number };
               updatedInventory[invItemIndex].quantity -= itemData.weight;
               updatedInventory[invItemIndex].lastUpdated = new Date().toISOString();
@@ -163,7 +188,10 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
       setPlannerItems([]);
       storageService.save('bakeryos_planner_items', []);
 
-      alert(`Bake committed successfully! Stock adjusted.${missingItems.length > 0 ? '\n\nNote: The following items were used but were not found in inventory: ' + missingItems.join(', ') : ''}`);
+      const message = missingItems.length > 0
+          ? `Bake committed. Stock adjusted. Not found in inventory: ${missingItems.join(', ')}.`
+          : 'Bake committed. Stock adjusted.';
+      showToast(message);
   };
 
   return (
@@ -243,6 +271,56 @@ const BatchPlanner: React.FC<BatchPlannerProps> = ({ onCreateWorkOrder }) => {
           )}
         </div>
       </div>
+
+      {/* Commit Confirmation Modal */}
+      {showCommitConfirm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="commit-confirm-title"
+            className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-6 w-full max-w-sm shadow-2xl"
+          >
+            <h2 id="commit-confirm-title" className="text-base font-bold text-stone-900 dark:text-stone-50 mb-1">Release to Production</h2>
+            <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
+              Ingredients will be deducted from stock and the batch plan will be cleared. This cannot be undone.
+            </p>
+            <div className="mb-5 space-y-1">
+              {plannerItems.map(item => (
+                <div key={item.uniqueId} className="flex justify-between text-sm">
+                  <span className="text-stone-700 dark:text-stone-300">{item.recipe.name}</span>
+                  <span className="font-mono text-stone-500 dark:text-stone-400">{item.count} units</span>
+                </div>
+              ))}
+              <div className="pt-2 border-t border-stone-200 dark:border-stone-700 flex justify-between text-sm font-bold">
+                <span className="text-stone-700 dark:text-stone-300">Total Dough</span>
+                <span className="font-mono text-stone-900 dark:text-stone-50">{(plannerSummary.totalDough / 1000).toFixed(2)} kg</span>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowCommitConfirm(false)}
+                className="px-4 py-2 text-sm text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={executeCommitBake}
+                className="px-4 py-2 text-sm font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Confirm Release
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-stone-900 dark:bg-stone-100 text-stone-50 dark:text-stone-900 px-4 py-3 rounded-lg shadow-lg text-sm font-medium max-w-sm text-center">
+          {toast}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
