@@ -99,12 +99,12 @@ const RecipeCost: React.FC<RecipeCostProps> = ({
                             </span>
                         )}
                     </td>
-                    <td className="px-4 py-4 text-sm font-medium text-stone-500 dark:text-stone-400 text-right">{item.weight.toFixed(0)}g</td>
+                    <td className="px-4 py-4 text-sm font-mono text-stone-500 dark:text-stone-400 text-right">{item.weight.toFixed(0)}g</td>
                     <td className="px-4 py-4 text-right">
                          <div className="flex flex-col items-end">
                              <div className="flex items-center justify-end gap-3">
                                 {item.usingInventory ? (
-                                    <span className="text-sm font-bold text-stone-800 dark:text-stone-100">${item.costPerKg?.toFixed(2)}</span>
+                                    <span className="text-sm font-mono font-bold text-stone-800 dark:text-stone-100">${item.costPerKg?.toFixed(2)}</span>
                                 ) : (
                                     <>
                                         <button
@@ -142,7 +142,7 @@ const RecipeCost: React.FC<RecipeCostProps> = ({
                             )}
                         </div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-stone-800 dark:text-stone-200 text-right font-bold">
+                    <td className="px-4 py-4 text-sm font-mono text-stone-800 dark:text-stone-200 text-right font-bold">
                         ${item.cost.toFixed(2)}
                     </td>
                 </tr>

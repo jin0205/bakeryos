@@ -114,7 +114,7 @@ const CostAnalysis: React.FC = () => {
                                 <td className="px-6 py-4 text-sm text-stone-600 dark:text-stone-400">
                                     {row.numberOfLoaves} loaves @ {row.weightPerLoaf}g
                                 </td>
-                                <td className="px-6 py-4 text-right text-sm text-stone-800 dark:text-stone-200">
+                                <td className="px-6 py-4 text-right font-mono text-sm text-stone-800 dark:text-stone-200">
                                     ${row.totalBatchCost.toFixed(2)}
                                 </td>
                                 <td className="px-6 py-4 text-right">
@@ -125,7 +125,7 @@ const CostAnalysis: React.FC = () => {
                                         {row.inventoryStatus === 'partial' && (
                                             <BoxIcon className="w-4 h-4 text-amber-500" aria-hidden="true" title="Partially calculated using inventory prices" />
                                         )}
-                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-sm font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400">
+                                        <span className="inline-flex items-center px-2.5 py-1 rounded text-sm font-mono font-bold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400">
                                             ${row.costPerLoaf.toFixed(2)}
                                         </span>
                                     </div>

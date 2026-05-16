@@ -157,10 +157,10 @@ const WorkOrders: React.FC<WorkOrdersProps> = ({ onOpenPanel }) => {
                     <td className="px-4 py-3 text-sm text-stone-700 dark:text-stone-300">
                       {wo.lineItems.map(li => li.recipeName).join(', ')}
                     </td>
-                    <td className="px-4 py-3 text-sm text-stone-600 dark:text-stone-400 text-right">
+                    <td className="px-4 py-3 text-sm font-mono text-stone-600 dark:text-stone-400 text-right">
                       {wo.totalDoughKg.toFixed(2)} kg
                     </td>
-                    <td className="px-4 py-3 text-sm text-stone-600 dark:text-stone-400 text-right">
+                    <td className="px-4 py-3 text-sm font-mono text-stone-600 dark:text-stone-400 text-right">
                       ${wo.estimatedCost.toFixed(2)}
                     </td>
                     <td className="px-4 py-3">
