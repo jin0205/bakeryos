@@ -1,203 +1,265 @@
-# Design System Master File
+# BakeryOS — Design System Master File
 
-> **LOGIC:** When building a specific page, first check `design-system/pages/[page-name].md`.
+> **LOGIC:** When building a specific page, first check `design-system/bakeryos/pages/[page-name].md`.
 > If that file exists, its rules **override** this Master file.
 > If not, strictly follow the rules below.
 
 ---
 
-**Project:** BakeryOS
-**Generated:** 2026-04-10 02:20:20
-**Category:** Bakery/Cafe
+**Project:** BakeryOS  
+**Type:** Artisan Bakery ERP (Dashboard / Data App)  
+**Stack:** React 19 + TypeScript + Tailwind CSS v4 + Vite  
+**Theme Modes:** `light` (warm amber/stone) and `amoled` (pure black + amber)  
+**Generated:** 2026-05-17
 
 ---
 
-## Global Rules
+## Themes
 
-### Color Palette
+BakeryOS has exactly **two** theme modes. Never add a third.
 
-| Role | Hex | CSS Variable |
-|------|-----|--------------|
-| Primary | `#92400E` | `--color-primary` |
-| Secondary | `#B45309` | `--color-secondary` |
-| CTA/Accent | `#F8FAFC` | `--color-cta` |
-| Background | `#FEF3C7` | `--color-background` |
-| Text | `#78350F` | `--color-text` |
+| Mode | Class | Description |
+|------|-------|-------------|
+| Light | `.theme-light` (default) | Warm parchment / amber bakery feel |
+| AMOLED | `.theme-amoled` | Pure-black OLED, amber accent |
 
-**Color Notes:** Warm brown + cream white
+The `dark:` Tailwind prefix is aliased via `@custom-variant` to `.theme-amoled` in `index.css`.  
+Always pair light + dark classes: `bg-white dark:bg-stone-900`.
 
-### Typography
+---
 
-- **Heading Font:** Fira Code
-- **Body Font:** Fira Sans
-- **Mood:** dashboard, data, analytics, code, technical, precise
-- **Google Fonts:** [Fira Code + Fira Sans](https://fonts.google.com/share?selection.family=Fira+Code:wght@400;500;600;700|Fira+Sans:wght@300;400;500;600;700)
+## Color Palette
 
-**CSS Import:**
-```css
-@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap');
+### CSS Custom Properties (from `index.css`)
+
+| Token | Light | AMOLED | Usage |
+|-------|-------|--------|-------|
+| `--bg-app` | `#fef3c7` | `#000000` | App shell background |
+| `--bg-surface` | `#f5f0e1` | `#0a0a0a` | Sidebar, secondary surface |
+| `--bg-elevated` | `#ffffff` | `#111111` | Cards, modals |
+| `--border-default` | `#e7d9bf` | `#1a1a1a` | Dividers, card borders |
+| `--text-primary` | `#78350f` | `#fafafa` | Headings, primary labels |
+| `--text-secondary` | `#92400e` | `#e5e5e5` | Body text |
+| `--text-muted` | `#a16207` | `#a3a3a3` | Captions, placeholders |
+| `--accent-primary` | `#b5651d` | `#d97706` | Brand amber, primary action |
+| `--accent-secondary` | `#c67b5c` | `#f59e0b` | Secondary amber, highlights |
+| `--state-success` | `#15803d` | `#22c55e` | Positive values, in-stock |
+| `--state-warning` | `#b45309` | `#f59e0b` | Alerts, low inventory |
+| `--state-danger` | `#b91c1c` | `#ef4444` | Errors, deficits |
+| `--focus-ring` | `#d97706` | `#f59e0b` | Keyboard focus outline |
+
+### Tailwind Palette Conventions (from CLAUDE.md)
+
+| Use | Classes |
+|-----|---------|
+| Brand / active | `text-amber-600`, `bg-amber-600`, `bg-amber-50 dark:bg-amber-900/20` |
+| Neutral / chrome | `text-stone-600 dark:text-stone-400` |
+| Borders | `border-stone-200 dark:border-stone-700` |
+| Body text | `text-stone-600 dark:text-stone-300` |
+| Headings | `text-stone-900 dark:text-stone-50` |
+
+---
+
+## Typography
+
+BakeryOS uses the system font stack (no custom Google Fonts imported).  
+Do not add external font imports unless explicitly instructed.
+
+| Element | Classes |
+|---------|---------|
+| Page heading | `text-2xl font-bold text-stone-900 dark:text-stone-50` |
+| Section heading | `text-lg font-semibold text-stone-900 dark:text-stone-50` |
+| Body text | `text-sm text-stone-600 dark:text-stone-300` |
+| Muted / caption | `text-xs text-stone-500 dark:text-stone-400` |
+| Numeric / metric | `text-2xl font-bold tabular-nums` |
+
+**Body line-height:** `leading-relaxed` (≈ 1.625)  
+**Minimum font size:** `text-sm` (14px) — `text-xs` only for secondary metadata.
+
+---
+
+## Spacing System
+
+Use Tailwind spacing. Standard page rhythm:
+
+| Context | Value |
+|---------|-------|
+| Page wrapper | `p-6` |
+| Vertical stack between sections | `space-y-6` |
+| Card internal padding | `p-6` |
+| Compact card padding | `p-4` |
+| Inline icon gap | `gap-2` |
+| Form field gap | `space-y-4` |
+
+---
+
+## Component Patterns
+
+### Section Card
+```tsx
+<div className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6">
 ```
 
-### Spacing Variables
+### Page Wrapper
+```tsx
+<div className="p-6 space-y-6">
+```
 
-| Token | Value | Usage |
+### Primary Button
+```tsx
+<button className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors text-sm font-medium cursor-pointer">
+```
+
+### Ghost / Secondary Button
+```tsx
+<button className="px-4 py-2 text-stone-600 dark:text-stone-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors text-sm cursor-pointer">
+```
+
+### Danger Button
+```tsx
+<button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium cursor-pointer">
+```
+
+### Table Container
+```tsx
+<table className="w-full text-sm">
+  <thead>
+    <tr className="border-b border-stone-200 dark:border-stone-700">
+      <th className="text-left py-3 px-4 text-stone-500 dark:text-stone-400 font-medium">
+```
+Use `divide-y divide-stone-200 dark:divide-stone-700` on `<tbody>`.
+
+### Form Input
+```tsx
+<input className="w-full px-3 py-2 text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-400 text-stone-900 dark:text-stone-50" />
+```
+
+### Badge / Status Chip
+```tsx
+// Success
+<span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+// Warning
+<span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
+// Danger
+<span className="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+```
+
+### Modal Overlay
+```tsx
+<div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+  <div className="bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-700 p-6 w-full max-w-lg shadow-xl">
+```
+
+### KPI / Metric Card
+```tsx
+<div className="bg-white dark:bg-stone-800 rounded-xl border border-stone-200 dark:border-stone-700 p-6">
+  <p className="text-sm text-stone-500 dark:text-stone-400">Label</p>
+  <p className="text-3xl font-bold text-stone-900 dark:text-stone-50 mt-1 tabular-nums">Value</p>
+  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Subtext</p>
+</div>
+```
+
+---
+
+## Shadows
+
+| Level | Tailwind | Usage |
+|-------|----------|-------|
+| Subtle | `shadow-sm` | Hover lift on rows |
+| Standard | `shadow-md` | Floating panels |
+| Heavy | `shadow-xl` | Modals, dialogs |
+
+---
+
+## Animation / Transitions
+
+| Rule | Value |
+|------|-------|
+| Micro-interaction duration | `transition-colors duration-150` |
+| Card hover lift | `hover:shadow-md transition-shadow duration-200` |
+| Loading spinner | `animate-spin` |
+| Skeleton pulse | `animate-pulse bg-stone-200 dark:bg-stone-700 rounded` |
+| Continuous animation | Loading indicators only — never decorative |
+| Reduced motion | Respect `prefers-reduced-motion` via Tailwind `motion-safe:` |
+
+---
+
+## Icons
+
+- Use **Lucide React** (already available in the project)
+- Standard size: `w-4 h-4` for inline, `w-5 h-5` for buttons, `w-6 h-6` for nav
+- Always `aria-hidden="true"` on decorative icons
+- Never use emojis as UI icons
+
+---
+
+## Accessibility
+
+| Rule | Implementation |
+|------|----------------|
+| Contrast | 4.5:1 minimum (WCAG AA). Stone-600 on white passes. |
+| Focus rings | `focus:ring-2 focus:ring-amber-500` on all interactive elements |
+| Keyboard nav | Tab order matches visual order; no skip-link gaps |
+| Icon buttons | `aria-label` on every icon-only button |
+| Form labels | `<label htmlFor>` on every input |
+| Touch targets | Minimum `min-h-[44px] min-w-[44px]` on mobile actions |
+| `cursor-pointer` | On **every** clickable element (button, tr, card) |
+
+---
+
+## Z-Index Scale
+
+| Layer | Value | Usage |
 |-------|-------|-------|
-| `--space-xs` | `4px` / `0.25rem` | Tight gaps |
-| `--space-sm` | `8px` / `0.5rem` | Icon gaps, inline spacing |
-| `--space-md` | `16px` / `1rem` | Standard padding |
-| `--space-lg` | `24px` / `1.5rem` | Section padding |
-| `--space-xl` | `32px` / `2rem` | Large gaps |
-| `--space-2xl` | `48px` / `3rem` | Section margins |
-| `--space-3xl` | `64px` / `4rem` | Hero padding |
-
-### Shadow Depths
-
-| Level | Value | Usage |
-|-------|-------|-------|
-| `--shadow-sm` | `0 1px 2px rgba(0,0,0,0.05)` | Subtle lift |
-| `--shadow-md` | `0 4px 6px rgba(0,0,0,0.1)` | Cards, buttons |
-| `--shadow-lg` | `0 10px 15px rgba(0,0,0,0.1)` | Modals, dropdowns |
-| `--shadow-xl` | `0 20px 25px rgba(0,0,0,0.15)` | Hero images, featured cards |
+| Base | `z-0` | Normal content |
+| Dropdown | `z-10` | Inline menus |
+| Sticky header | `z-20` | Sticky table headers |
+| Sidebar | `z-30` | Side navigation |
+| Modal overlay | `z-50` | Dialogs |
+| Toasts | `z-[60]` | Notifications above modals |
 
 ---
 
-## Component Specs
+## Layout Architecture
 
-### Buttons
-
-```css
-/* Primary Button */
-.btn-primary {
-  background: #F8FAFC;
-  color: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
-
-.btn-primary:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-/* Secondary Button */
-.btn-secondary {
-  background: transparent;
-  color: #92400E;
-  border: 2px solid #92400E;
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: all 200ms ease;
-  cursor: pointer;
-}
+```
+App.tsx
+├── Sidebar (fixed left, w-64)
+└── Main content area (ml-64, full height scroll)
+    └── Component page (p-6 space-y-6)
+        ├── Page header (title + actions)
+        ├── KPI row (grid grid-cols-2 lg:grid-cols-4 gap-4)
+        └── Content cards
 ```
 
-### Cards
-
-```css
-.card {
-  background: #FEF3C7;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  transition: all 200ms ease;
-  cursor: pointer;
-}
-
-.card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-```
-
-### Inputs
-
-```css
-.input {
-  padding: 12px 16px;
-  border: 1px solid #E2E8F0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: border-color 200ms ease;
-}
-
-.input:focus {
-  border-color: #92400E;
-  outline: none;
-  box-shadow: 0 0 0 3px #92400E20;
-}
-```
-
-### Modals
-
-```css
-.modal-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-}
-
-.modal {
-  background: white;
-  border-radius: 16px;
-  padding: 32px;
-  box-shadow: var(--shadow-xl);
-  max-width: 500px;
-  width: 90%;
-}
-```
+Sidebar is always visible on desktop. No mobile hamburger yet — mobile is not the primary target.
 
 ---
 
-## Style Guidelines
+## Anti-Patterns (FORBIDDEN)
 
-**Style:** Vibrant & Block-based
-
-**Keywords:** Bold, energetic, playful, block layout, geometric shapes, high color contrast, duotone, modern, energetic
-
-**Best For:** Startups, creative agencies, gaming, social media, youth-focused, entertainment, consumer
-
-**Key Effects:** Large sections (48px+ gaps), animated patterns, bold hover (color shift), scroll-snap, large type (32px+), 200-300ms
-
-### Page Pattern
-
-**Pattern Name:** Comparison Table + CTA
-
-- **Conversion Strategy:** Use comparison to show unique value. Highlight your product row. Include 'free trial' in pricing row.
-- **CTA Placement:** Table: Right column. CTA: Below table
-- **Section Order:** 1. Hero, 2. Problem intro, 3. Comparison table (product vs competitors), 4. Pricing (optional), 5. CTA
-
----
-
-## Anti-Patterns (Do NOT Use)
-
-- ❌ Poor food photos
-- ❌ Hidden hours
-
-### Additional Forbidden Patterns
-
-- ❌ **Emojis as icons** — Use SVG icons (Heroicons, Lucide, Simple Icons)
-- ❌ **Missing cursor:pointer** — All clickable elements must have cursor:pointer
-- ❌ **Layout-shifting hovers** — Avoid scale transforms that shift layout
-- ❌ **Low contrast text** — Maintain 4.5:1 minimum contrast ratio
-- ❌ **Instant state changes** — Always use transitions (150-300ms)
-- ❌ **Invisible focus states** — Focus states must be visible for a11y
+- ❌ Emojis as icons — use Lucide SVG
+- ❌ Missing `cursor-pointer` on any clickable element
+- ❌ Layout-shifting hover (scale transforms that move siblings)
+- ❌ Low-contrast text (stone-400 on white fails — use stone-600 minimum)
+- ❌ Instant state changes — always `transition-colors duration-150` or faster
+- ❌ Invisible focus states
+- ❌ Introducing a `'dark'` ThemeMode value — only `'light'` and `'amoled'` exist
+- ❌ Raw `localStorage` calls — use `storageService.load / storageService.save`
+- ❌ Importing `@anthropic-ai/sdk` in frontend files — AI calls go through `claudeService.ts`
+- ❌ Adding Vercel config — project deploys to Cloudflare Workers
 
 ---
 
 ## Pre-Delivery Checklist
 
-Before delivering any UI code, verify:
-
-- [ ] No emojis used as icons (use SVG instead)
-- [ ] All icons from consistent icon set (Heroicons/Lucide)
-- [ ] `cursor-pointer` on all clickable elements
-- [ ] Hover states with smooth transitions (150-300ms)
-- [ ] Light mode: text contrast 4.5:1 minimum
-- [ ] Focus states visible for keyboard navigation
-- [ ] `prefers-reduced-motion` respected
-- [ ] Responsive: 375px, 768px, 1024px, 1440px
-- [ ] No content hidden behind fixed navbars
-- [ ] No horizontal scroll on mobile
+- [ ] All Tailwind classes paired: `bg-white dark:bg-stone-800`
+- [ ] No emojis as icons (Lucide only)
+- [ ] `cursor-pointer` on every clickable element
+- [ ] Hover states use `transition-colors duration-150` or `transition-shadow duration-200`
+- [ ] Focus rings: `focus:ring-2 focus:ring-amber-500`
+- [ ] Form inputs have `<label htmlFor>`
+- [ ] Icon-only buttons have `aria-label`
+- [ ] Tables wrapped in `overflow-x-auto` for mobile
+- [ ] No horizontal scroll at 375px viewport
+- [ ] `motion-safe:` prefix on non-essential animations
