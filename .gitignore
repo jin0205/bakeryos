@@ -31,3 +31,7 @@ dist-ssr
 # Playwright
 test-results/
 playwright-report/
+
+# Python bytecode
+__pycache__/
+*.pyc
