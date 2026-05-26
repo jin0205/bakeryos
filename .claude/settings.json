@@ -46,7 +46,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash /Users/kevin/sourdough-pro-ai/.claude/hooks/ui-review-on-stop.sh"
+            "command": "bash .claude/hooks/ui-review-on-stop.sh"
           }
         ]
       }

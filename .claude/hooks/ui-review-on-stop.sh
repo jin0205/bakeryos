@@ -2,7 +2,7 @@
 # Auto-trigger ui-reviewer for modified BakeryOS components at session end.
 # Runs headless claude -p in background; exits quietly if no components changed.
 
-PROJECT_DIR="/Users/kevin/sourdough-pro-ai"
+PROJECT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 MODIFIED=$(git -C "$PROJECT_DIR" diff --name-only HEAD 2>/dev/null | grep -E 'components/.*\.tsx$' | head -10)
 
 if [ -z "$MODIFIED" ]; then
@@ -12,7 +12,7 @@ fi
 FILES=$(echo "$MODIFIED" | tr '\n' ' ')
 LOG="/tmp/bakeryos-ui-review-$(date +%Y%m%d-%H%M%S).log"
 
-/Users/kevin/.local/bin/claude -p "Review these modified BakeryOS React components for UI convention issues:
+claude -p "Review these modified BakeryOS React components for UI convention issues:
 
 Files: $FILES
 
