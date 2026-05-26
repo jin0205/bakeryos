@@ -3,7 +3,7 @@
 # Checks for stale tech references and configuration drift.
 # Intended to run via cron; logs to ~/.claude/logs/
 
-PROJECT_DIR="/Users/kevin/sourdough-pro-ai"
+PROJECT_DIR="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 LOG_DIR="$HOME/.claude/logs"
 LOG="$LOG_DIR/bakeryos-audit-$(date +%Y%m%d).log"
 
@@ -11,7 +11,7 @@ mkdir -p "$LOG_DIR"
 
 echo "=== BakeryOS CLAUDE.md Audit - $(date) ===" > "$LOG"
 
-/Users/kevin/.local/bin/claude -p "Audit the CLAUDE.md file in /Users/kevin/sourdough-pro-ai for stale or incorrect information. Check for:
+claude -p "Audit the CLAUDE.md file in $PROJECT_DIR for stale or incorrect information. Check for:
 
 1. Any mention of Vercel, Vercel Analytics, or vercel.json that should say Cloudflare Workers instead
 2. Any mention of Gemini, @google/genai, or GEMINI_API_KEY that should say Claude/Anthropic instead
